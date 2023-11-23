@@ -1,0 +1,7 @@
+# Ignore certain directories
+tmp/
+other/
+
+# Ignore python cache files
+*.pyc
+__pycache__/
