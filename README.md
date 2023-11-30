@@ -4,13 +4,28 @@ This repository contains example for PINN with curriculum learning for solving P
 
 ## Overview
 
+# Curriculum Learning implementation
+
+Some notes on our custom implementation of curriculum learning:
+
+Curriculum Learning:
+Input:
+- Model
+- Loss function
+- Optimizer
+
+- Curriculum Scheduler: A scheduler (impl. as iterator), returning parameters (e.g. number of epochs, learning rate, early stopping function, etc.) and data loader for the current curriculum step 
+<!-- - Curriculum Data Loader: A specialized data loader wrapper, returning parameterized data loaders for each curriculum step. -->
+- Curriculum Trainer: A trainer, which trains the model for one curriculum step. It takes the model, loss function, optimizer and the data loader for the current curriculum step as input.
+- Curriculum Evaluator: An evaluator, which evaluates the model for one curriculum step. It takes the model, loss function, optimizer and the data loader for the current curriculum step as input.
+
 # To Do
 
 ## Implementation
 
 - [ ] Technological stack (e.g. Weights & Biases, PyTorch Lightning, etc.)?
-- [ ] Project structure (e.g. `src`, `data`, `notebooks`, `reports`, `references`, `tests`, `docs`, etc. In `src`: `models`, `data`, `utils`, etc., But highly depends on the project goals)
-- [ ] Experimental setup (e.g. similar to the paper?)
+- [x] Project structure (e.g. `src`, `data`, `notebooks`, `reports`, `references`, `tests`, `docs`, etc. In `src`: `models`, `data`, `utils`, etc., But highly depends on the project goals)
+- [x] Experimental setup (e.g. similar to the paper?)
 - [ ] Implementation of curriculum learning (also in comparison to non-curriculum learning)
 - [ ] Visualization of results (e.g. plots of metrics, predictions, etc.)
 - [ ] Documentation (e.g. `README.md`, `requirements.txt`, `setup.py`, `LICENSE`, Code Documentation etc.)

@@ -95,7 +95,9 @@ class ConvectionEquationSolver(PDESolver):
             u
         )  # to present the u in the form of u(x,t) to  be consistent with NN approximation
 
-    def loss(self, x, t, model):
+    @staticmethod
+    def loss(x, t, c, model):
+        # print("loss pde")
         x.requires_grad = True
         t.requires_grad = True
 
@@ -120,5 +122,6 @@ class ConvectionEquationSolver(PDESolver):
             allow_unused=True,
         )[0]
 
-        f = du_dt + self.c * du_dx
+        f = du_dt + c * du_dx
+        # print("loss pde complete")
         return f
