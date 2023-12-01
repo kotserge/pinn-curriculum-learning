@@ -86,7 +86,9 @@ class CurriculumLearning:
             trainer.run(**self.kwargs)
 
             # Evaluate model
-            evaluator = self.evaluator(self.model, edata_loader, **parameters)
+            evaluator = self.evaluator(
+                self.model, self.loss_module, edata_loader, parameters
+            )
             evaluator.run(**self.kwargs)
 
             # Logging

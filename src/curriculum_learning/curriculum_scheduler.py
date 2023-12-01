@@ -14,17 +14,20 @@ class CurriculumScheduler:
         start (int): starting curriculum step
         end (int): ending curriculum step
         step (int): curriculum step size
+        hyperparameters (dict): hyperparameters, describing the model, optimizer, loss function
     """
 
-    def __init__(self, start: int, end: int, step: int) -> None:
+    def __init__(self, start: int, end: int, step: int, hyperparameters: dict) -> None:
         super().__init__()
 
         # Curriculum parameters
-        self.curriculum_step = -step + start
+        self.curriculum_step = start - step
 
         self.start: int = start
         self.step: int = step
         self.end: int = end
+
+        self.hyperparameters: dict = hyperparameters
 
     def next(self) -> None:
         self.curriculum_step += self.step

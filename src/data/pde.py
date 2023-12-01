@@ -97,7 +97,6 @@ class ConvectionEquationSolver(PDESolver):
 
     @staticmethod
     def loss(x, t, c, model):
-        # print("loss pde")
         x.requires_grad = True
         t.requires_grad = True
 
@@ -123,5 +122,4 @@ class ConvectionEquationSolver(PDESolver):
         )[0]
 
         f = du_dt + c * du_dx
-        # print("loss pde complete")
         return f

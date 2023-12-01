@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 
 
@@ -12,15 +13,25 @@ class CurriculumEvaluator:
 
     Args:
         model (nn.Module): model to train
+        loss_module (_Loss): loss module used for training
         data_loader (DataLoader): data loader to use
     """
 
-    def __init__(self, model: nn.Module, data_loader: DataLoader, **kwargs) -> None:
+    def __init__(
+        self,
+        model: nn.Module,
+        loss_module: _Loss,
+        data_loader: DataLoader,
+        parameters: dict,
+        **kwargs
+    ):
         self.model: nn.Module = model
+        self.loss_module: _Loss = loss_module
         self.data_loader: DataLoader = data_loader
         self.device: str = (
             torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         )
+        self.parameters: dict = parameters
         self.kwargs = kwargs
 
     def run(self) -> None:
