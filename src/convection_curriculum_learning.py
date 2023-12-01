@@ -1,4 +1,6 @@
 import numpy as np
+import time
+import os
 from tqdm import tqdm
 
 import torch
@@ -90,11 +92,18 @@ class ConvectionEquationPDEDataset(data.Dataset):
 class ConvectiveCurriculumLearning(CurriculumLearning):
     def init_logging(self, **kwargs) -> None:
         """Initial logging, before the curriculum learning process starts."""
-        pass
+        self.timestamp = time.strftime("%Y%m%d-%H%M%S")
+
+        # create directory for model
+        os.makedirs(f"model/{self.timestamp}", exist_ok=True)
 
     def curriculum_step_logging(self, **kwargs) -> None:
         """Logging for each curriculum step."""
         print(f"Current curriculum step: {self.scheduler.curriculum_step}")
+        torch.save(
+            self.model.state_dict(),
+            f"model/{self.timestamp}/convection_with_curriculum_{self.scheduler.curriculum_step}.pth",
+        )
 
     def end_logging(self, **kwargs) -> None:
         """Logging after the curriculum learning process ends."""

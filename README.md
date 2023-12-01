@@ -6,18 +6,7 @@ This repository contains example for PINN with curriculum learning for solving P
 
 # Curriculum Learning implementation
 
-Some notes on our custom implementation of curriculum learning:
-
-Curriculum Learning:
-Input:
-- Model
-- Loss function
-- Optimizer
-
-- Curriculum Scheduler: A scheduler (impl. as iterator), returning parameters (e.g. number of epochs, learning rate, early stopping function, etc.) and data loader for the current curriculum step 
-<!-- - Curriculum Data Loader: A specialized data loader wrapper, returning parameterized data loaders for each curriculum step. -->
-- Curriculum Trainer: A trainer, which trains the model for one curriculum step. It takes the model, loss function, optimizer and the data loader for the current curriculum step as input.
-- Curriculum Evaluator: An evaluator, which evaluates the model for one curriculum step. It takes the model, loss function, optimizer and the data loader for the current curriculum step as input.
+![curriculum_learning](docs/img/curriculum_loop.drawio.png)
 
 # To Do
 
