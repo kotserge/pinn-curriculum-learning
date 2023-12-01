@@ -29,6 +29,7 @@ class CurriculumLearning:
         device: str = (
             torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         ),
+        logging: bool = False,
         **kwargs,
     ) -> None:
         # Model, optimizer, loss module and data loader
@@ -43,27 +44,44 @@ class CurriculumLearning:
 
         # Other
         self.device: str = device
+        self.logging: bool = logging
         self.kwargs = kwargs
+
+    def init_logging(self, **kwargs) -> None:
+        """Initial logging, before the curriculum learning process starts."""
+        pass
+
+    def curriculum_step_logging(self, **kwargs) -> None:
+        """Logging for each curriculum step."""
+        pass
+
+    def end_logging(self, **kwargs) -> None:
+        """Logging after the curriculum learning process ends."""
+        pass
 
     def run(self) -> None:
         """Runs the curriculum learning process."""
+
+        self.init_logging(overview=self.scheduler.get_parameters(overview=True))
+
         while self.scheduler.has_next():
             # Update scheduler
             self.scheduler.next()
 
-            # Print current curriculum step
-            print(
-                f"Curriculum step: {self.scheduler.curriculum_step}/{self.scheduler.max_iter}"
-            )
-
             # Get data loader and parameters for current curriculum step
-            data_loader = self.scheduler.get_data_loader()
-            edata_loader = self.scheduler.get_eval_data_loader()
+            tdata_loader = self.scheduler.get_train_data_loader()
+            vdata_loader = self.scheduler.get_validation_data_loader()
+            edata_loader = self.scheduler.get_test_data_loader()
             parameters = self.scheduler.get_parameters()
 
             # Start training
             trainer = self.trainer(
-                self.model, self.optimizer, self.loss_module, data_loader, **parameters
+                self.model,
+                self.optimizer,
+                self.loss_module,
+                tdata_loader,
+                vdata_loader,
+                parameters,
             )
             trainer.run(**self.kwargs)
 
@@ -71,8 +89,7 @@ class CurriculumLearning:
             evaluator = self.evaluator(self.model, edata_loader, **parameters)
             evaluator.run(**self.kwargs)
 
-            # Save model
-            torch.save(
-                self.model.state_dict(),
-                f"tmp/model_{self.scheduler.curriculum_step}.pt",
-            )
+            # Logging
+            self.curriculum_step_logging(model=self.model, parameters=parameters)
+
+        self.end_logging(model=self.model, parameters=parameters)

@@ -13,10 +13,13 @@ class CurriculumTrainer:
     run method.
 
     Args:
-        model (nn.Module): model to train
-        optimizer (Optimizer): optimizer to use
-        loss_module (_Loss): loss function to use
-        data_loader (DataLoader): data loader to use
+        model (nn.Module): The model to be trained.
+        optimizer (Optimizer): The optimizer to be used for training.
+        loss_module (_Loss): The loss module to be used for training.
+        train_data_loader (DataLoader): The data loader for the training data.
+        validation_data_loader (DataLoader): The data loader for the validation data.
+        parameters (dict): A dictionary containing the parameters for the training process (provided by the scheduler for each curriculum step)
+        **kwargs: Additional keyword arguments.
     """
 
     def __init__(
@@ -24,18 +27,20 @@ class CurriculumTrainer:
         model: nn.Module,
         optimizer: Optimizer,
         loss_module: _Loss,
-        data_loader: DataLoader,
-        epochs: int,
+        train_data_loader: DataLoader,
+        validation_data_loader: DataLoader,
+        parameters: dict,
         **kwargs,
     ) -> None:
         # Model, optimizer, loss module and data loader
         self.model: nn.Module = model
         self.optimizer: Optimizer = optimizer
         self.loss_module: _Loss = loss_module
-        self.data_loader: DataLoader = data_loader
+        self.train_data_loader: DataLoader = train_data_loader
+        self.validation_data_loader: DataLoader = validation_data_loader
 
         # Parameters
-        self.epochs: int = epochs
+        self.parameters: dict = parameters
 
         # Other
         self.device: str = (

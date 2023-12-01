@@ -11,29 +11,40 @@ class CurriculumScheduler:
     each specific case.
 
     Args:
-        step_size (int): curriculum step size
-        max_iter (int): maximum curriculum step
+        start (int): starting curriculum step
+        end (int): ending curriculum step
+        step (int): curriculum step size
     """
 
-    def __init__(self, step_size: int, max_iter: int) -> None:
+    def __init__(self, start: int, end: int, step: int) -> None:
         super().__init__()
 
         # Curriculum parameters
-        self.curriculum_step = -step_size
-        self.step_size: int = step_size
-        self.max_iter: int = max_iter
+        self.curriculum_step = -step + start
+
+        self.start: int = start
+        self.step: int = step
+        self.end: int = end
 
     def next(self) -> None:
-        self.curriculum_step += self.step_size
+        self.curriculum_step += self.step
 
     def has_next(self) -> bool:
-        return self.curriculum_step + self.step_size < self.max_iter
+        return self.curriculum_step + self.step <= self.end
 
-    def get_data_loader(self) -> DataLoader:
-        raise NotImplementedError("get_data_loader method is not implemented")
+    def reset(self) -> None:
+        self.curriculum_step = self.start
 
-    def get_eval_data_loader(self) -> DataLoader:
-        raise NotImplementedError("get_eval_data_loader method is not implemented")
+    def get_train_data_loader(self) -> DataLoader:
+        raise NotImplementedError("get_train_data_loader method is not implemented")
 
-    def get_parameters(self) -> dict:
+    def get_validation_data_loader(self) -> DataLoader:
+        raise NotImplementedError(
+            "get_validation_data_loader method is not implemented"
+        )
+
+    def get_test_data_loader(self) -> DataLoader:
+        raise NotImplementedError("get_test_data_loader method is not implemented")
+
+    def get_parameters(self, overview: bool = False) -> dict:
         raise NotImplementedError("get_parameters method is not implemented")

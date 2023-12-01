@@ -2,7 +2,7 @@ import numpy as np
 from tqdm import tqdm
 
 import torch
-from torch import nn, optim
+from torch import nn, optim, Tensor
 from torch.utils import data
 from torch.nn.modules.loss import _Loss
 
@@ -19,7 +19,35 @@ from model.model import PINNModel
 from util.training_loop import TrainingFactory
 
 
-# Build Dataset Loader for PDE
+# --- Loss ---
+# This is the loss function for the convection equation PDE.
+
+
+def convection_loss(
+    input: Tensor,
+    target: Tensor,
+    x: Tensor,
+    t: Tensor,
+    convection: float,
+    model: nn.Module,
+) -> Tensor:
+    loss_mse = torch.nn.MSELoss()(input, target)
+
+    loss_pde = ConvectionEquationSolver.loss(
+        x=x,
+        t=t,
+        c=convection,
+        model=model,
+    )
+    loss_pde = torch.mean(loss_pde**2)  # PDE loss
+
+    return loss_mse + loss_pde
+
+
+# --- PDE Dataset---
+# This is the dataset for the convection equation PDE.
+
+
 class ConvectionEquationPDEDataset(data.Dataset):
     def __init__(
         self,
@@ -54,6 +82,29 @@ class ConvectionEquationPDEDataset(data.Dataset):
         return self.X[idx], self.Y[idx]
 
 
+# --- Curriculum Learning ---
+# This is the curriculum learning process for the convection equation PDE.
+# It only extends the logging functions to log to wandb.
+
+
+class ConvectiveCurriculumLearning(CurriculumLearning):
+    def init_logging(self, **kwargs) -> None:
+        """Initial logging, before the curriculum learning process starts."""
+        pass
+
+    def curriculum_step_logging(self, **kwargs) -> None:
+        """Logging for each curriculum step."""
+        print(f"Current curriculum step: {self.scheduler.curriculum_step}")
+
+    def end_logging(self, **kwargs) -> None:
+        """Logging after the curriculum learning process ends."""
+        pass
+
+
+# --- Curriculum Scheduler ---
+# This is the scheduler for the convection equation PDE.
+
+
 class ConvectionCurriculumScheduler(CurriculumScheduler):
     """Scheduler for curriculum learning for the convection equation PDE.
 
@@ -63,8 +114,9 @@ class ConvectionCurriculumScheduler(CurriculumScheduler):
 
     def __init__(
         self,
-        step_size: int,
-        max_iter: int,
+        start: int,
+        end: int,
+        step: int,
         epochs: int,
         batch_size: int,
         l: float = 2 * np.pi,
@@ -75,8 +127,9 @@ class ConvectionCurriculumScheduler(CurriculumScheduler):
         """Builds a scheduler for the convection equation PDE.
 
         Args:
-            step_size (int): curriculum step size
-            max_iter (int): maximum curriculum iteration
+            start (int): starting curriculum step
+            end (int): ending curriculum step
+            step (int): curriculum step size
             epochs (int): number of epochs
             batch_size (int): batch size
             l (float, optional): length of the domain. Defaults to 2 * np.pi.
@@ -84,7 +137,7 @@ class ConvectionCurriculumScheduler(CurriculumScheduler):
             n (int, optional): number of grid points. Defaults to 50.
             snr (int, optional): noise to be added. If zero, no noise will be added to solution. Defaults to 0.
         """
-        super().__init__(step_size, max_iter)
+        super().__init__(start, end, step)
 
         # Parameters for training
         self.epochs: int = epochs
@@ -96,7 +149,7 @@ class ConvectionCurriculumScheduler(CurriculumScheduler):
         self.n: int = n
         self.snr: int = snr
 
-    def get_data_loader(self, **kwargs) -> data.DataLoader:
+    def get_train_data_loader(self, **kwargs) -> data.DataLoader:
         """Returns a data loader for the current curriculum step."""
         return data.DataLoader(
             ConvectionEquationPDEDataset(
@@ -111,13 +164,59 @@ class ConvectionCurriculumScheduler(CurriculumScheduler):
             **kwargs,
         )
 
-    def get_eval_data_loader(self, **kwargs) -> data.DataLoader:
+    def get_validation_data_loader(self, **kwargs) -> data.DataLoader:
         """Returns a data loader for the current curriculum step."""
-        return self.get_data_loader(**kwargs)
+        return self.get_train_data_loader(**kwargs)
 
-    def get_parameters(self) -> dict:
+    def get_test_data_loader(self, **kwargs) -> data.DataLoader:
+        """Returns a data loader for the current curriculum step."""
+        return self.get_train_data_loader(**kwargs)
+
+    def get_parameters(self, overview: bool = False) -> dict:
         """Returns parameters for the current curriculum step."""
-        return {"epochs": self.epochs, "convection": self.curriculum_step}
+
+        if overview:
+            return {
+                "curriculum": {
+                    "curriculum_step": list(range(self.start, self.end + 1, self.step)),
+                    "start": self.start,
+                    "step": self.step,
+                    "end": self.end,
+                },
+                "training": {
+                    "epochs": self.epochs,
+                },
+                "pde": {
+                    "l": self.l,
+                    "t": self.t,
+                    "n": self.n,
+                    "convection": self.curriculum_step,
+                    "snr": self.snr,
+                },
+            }
+
+        return {
+            "curriculum": {
+                "curriculum_step": self.curriculum_step,
+                "start": self.start,
+                "step": self.step,
+                "end": self.end,
+            },
+            "training": {
+                "epochs": self.epochs,
+            },
+            "pde": {
+                "l": self.l,
+                "t": self.t,
+                "n": self.n,
+                "convection": self.curriculum_step,
+                "snr": self.snr,
+            },
+        }
+
+
+# --- Trainer ---
+# This is the trainer for the convection equation PDE.
 
 
 class ConvectionEquationTrainer(CurriculumTrainer):
@@ -130,12 +229,12 @@ class ConvectionEquationTrainer(CurriculumTrainer):
         self.model.train()
         self.optimizer.zero_grad()
 
-        for epoch in tqdm(range(self.epochs), miniters=0):
+        for _ in tqdm(range(self.parameters["training"]["epochs"]), miniters=0):
             # Epoch loss aggregator
             epoch_loss_aggregation = 0.0
 
             # Batch loop
-            for batch, (data_inputs, data_labels) in enumerate(self.data_loader):
+            for batch, (data_inputs, data_labels) in enumerate(self.train_data_loader):
                 ## Step 1 - Move input data to device
                 data_inputs, data_labels = data_inputs.to(self.device), data_labels.to(
                     self.device
@@ -153,8 +252,8 @@ class ConvectionEquationTrainer(CurriculumTrainer):
                     data_labels,
                     x,
                     t,
+                    self.parameters["pde"]["convection"],
                     model,
-                    self.kwargs["convection"],
                 )
 
                 ## Step 4 - Perform backpropagation & update weights
@@ -166,13 +265,15 @@ class ConvectionEquationTrainer(CurriculumTrainer):
                 epoch_loss_aggregation += loss.item()
 
             # Step 6 - Average epoch loss
-            epoch_loss_mean += epoch_loss_aggregation / len(self.data_loader)
+            epoch_loss_mean += epoch_loss_aggregation / len(self.train_data_loader)
 
         # Step 8 - Final logging
-
-        # Print training finished
         print("-" * 50 + "\nTraining finished\n" + "-" * 50)
-        print(f"Epoch loss: {epoch_loss_mean / self.epochs}")
+        print(f"Epoch loss: {epoch_loss_mean / self.parameters['training']['epochs']}")
+
+
+# --- Evaluator ---
+# This is the evaluator for the convection equation PDE.
 
 
 class ConvectionEquationEvaluator(CurriculumEvaluator):
@@ -180,27 +281,15 @@ class ConvectionEquationEvaluator(CurriculumEvaluator):
         pass
 
 
-def convection_loss(output, target, x, t, model, convection):
-    loss_mse = torch.nn.MSELoss()(output, target)
-
-    loss_pde = ConvectionEquationSolver.loss(
-        x=x,
-        t=t,
-        c=convection,
-        model=model,
-    )
-    loss_pde = torch.mean(loss_pde**2)  # PDE loss
-
-    return loss_mse + loss_pde
-
-
 if __name__ == "__main__":
     model = PINNModel(input_dim=2, hidden_dim=50).to(torch.float64)
     optimizer = optim.Adam(model.parameters(), lr=0.1, weight_decay=0.01)
+    loss = convection_loss
 
     scheduler = ConvectionCurriculumScheduler(
-        step_size=1,
-        max_iter=30,
+        start=1,
+        end=30,
+        step=1,
         epochs=50,
         batch_size=64,
         l=2 * np.pi,
@@ -209,10 +298,10 @@ if __name__ == "__main__":
         snr=0,
     )
 
-    learner = CurriculumLearning(
+    learner = ConvectiveCurriculumLearning(
         model,
         optimizer,
-        convection_loss,
+        loss,
         scheduler,
         ConvectionEquationTrainer,
         ConvectionEquationEvaluator,
