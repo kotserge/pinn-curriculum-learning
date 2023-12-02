@@ -4,7 +4,6 @@ import torch
 from torch import nn
 from torch.optim import Optimizer
 from torch.nn.modules.loss import _Loss
-from torch.optim.lr_scheduler import _LRScheduler
 
 from .curriculum_evaluator import CurriculumEvaluator
 from .curriculum_scheduler import CurriculumScheduler
@@ -14,8 +13,11 @@ from .curriculum_trainer import CurriculumTrainer
 class CurriculumLearning:
     """Base class for curriculum learning.
 
-    This class is responsible for the curriculum learning process.
+    This class is responsible for the curriculum learning process based on the given scheduler, trainer and evaluator.
 
+    It is possible to use the class as is, without any logging. Logging is done by calling the init_logging,
+    curriculum_step_logging and end_logging methods. These methods should be implemented by the user by extending
+    this class. If logging is not required, the methods can be left empty.
     """
 
     def __init__(
@@ -27,12 +29,25 @@ class CurriculumLearning:
         trainer: Type[CurriculumTrainer],
         evaluator: Type[CurriculumEvaluator],
         hyperparameters: dict,
+        logging_path: Optional[str] = None,
         device: str = (
             torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         ),
-        logging: bool = False,
         **kwargs,
     ) -> None:
+        """Initializes the curriculum learning process.
+
+        Args:
+            model (nn.Module): The model to be trained.
+            optimizer (Optimizer): The optimizer to be used.
+            loss (_Loss): The loss module (or function) to be used.
+            scheduler (CurriculumScheduler): The scheduler to be used.
+            trainer (Type[CurriculumTrainer]): The trainer class to be used.
+            evaluator (Type[CurriculumEvaluator]): The evaluator class to be used.
+            hyperparameters (dict): Hyperparameters of the curriculum learning process.
+            device (str, optional): On which device the process should be run. Defaults to "cuda" if available, otherwise "cpu".
+            logging_path (str, optional): Path to the logging directory. Defaults to None.
+        """
         # Model, optimizer, loss module and data loader
         self.model: nn.Module = model
         self.optimizer: Optimizer = optimizer
@@ -48,8 +63,8 @@ class CurriculumLearning:
         self.baseline: bool = not hyperparameters["learning"]["curriculum"]
 
         # Other
+        self.logging_path: Optional[str] = None
         self.device: str = device
-        self.logging: bool = logging
         self.kwargs = kwargs
 
         # Preparation for baseline training (i.e. model is reset to initial state after each curriculum step)
@@ -70,7 +85,16 @@ class CurriculumLearning:
         pass
 
     def run(self) -> None:
-        """Runs the curriculum learning process."""
+        """Runs the curriculum learning process.
+
+        This method is responsible for running the curriculum learning process, by querying the scheduler for the
+        data loaders and then running the trainer and evaluator for each curriculum step.
+
+        If logging is enabled, logging is done before the curriculum learning process starts, after each curriculum
+        step and after the curriculum learning process ends.
+
+        If baseline training is used, the model is reset to the initial state after each curriculum step.
+        """
 
         self.init_logging()
 
@@ -85,23 +109,27 @@ class CurriculumLearning:
 
             # Start training
             trainer = self.trainer(
-                self.model,
-                self.optimizer,
-                self.loss,
-                tdata_loader,
-                vdata_loader,
-                self.scheduler.curriculum_step,
-                self.hyperparameters,
+                model=self.model,
+                optimizer=self.optimizer,
+                loss=self.loss,
+                train_data_loader=tdata_loader,
+                validation_data_loader=vdata_loader,
+                curriculum_step=self.scheduler.curriculum_step,
+                hyperparameters=self.hyperparameters,
+                device=self.device,
+                logging_path=self.logging_path,
             )
             trainer.run(**self.kwargs)
 
             # Evaluate model
             evaluator = self.evaluator(
-                self.model,
-                self.loss,
-                edata_loader,
-                self.scheduler.curriculum_step,
-                self.hyperparameters,
+                model=self.model,
+                loss=self.loss,
+                data_loader=edata_loader,
+                curriculum_step=self.scheduler.curriculum_step,
+                hyperparameters=self.hyperparameters,
+                device=self.device,
+                logging_path=self.logging_path,
             )
             evaluator.run(**self.kwargs)
 

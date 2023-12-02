@@ -22,14 +22,15 @@ This repository contains example for PINN with curriculum learning for solving P
 - [x] Shuffle?
 - [x] Figure out closure for `torch.optim.LBFGS`
   - [ ] Still buggy
-- [x] Small improvements
-  - [x] save path
-  - [x] Better CLI Logging of run
 - [x] Seeding? (e.g. `torch.manual_seed(n)`)
 - [x] Baseline implementation (i.e. PINN without curriculum learning)
 - [x] Stopping criterion (e.g. early stopping, etc.)
-- [ ] Documentation Code (e.g. docstrings, comments, etc.)
-- [ ] Documentation (e.g. `README.md`, `requirements.txt`, `setup.py`, `LICENSE`, Code Documentation etc.)
+- [x] Small improvements
+  - [x] save path
+  - [x] Better CLI Logging of run
+  - [x] Documentation Code (e.g. doc-strings, comments, etc.)
+  - [ ] Assertion tests (e.g. `assert x.shape == y.shape`)
+- [ ] Documentation (e.g. `README.md`, `requirements.txt`, `setup.py`, `LICENSE`, etc.)
 
 ## Other
 

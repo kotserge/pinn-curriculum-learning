@@ -5,7 +5,19 @@ import matplotlib.pyplot as plt
 from torch import Tensor
 
 
-def comparison_plot(prediction: Tensor, ground_truth: Tensor, params: dict = {}):
+def comparison_plot(
+    prediction: Tensor, ground_truth: Tensor, params: dict = {}
+) -> (plt.Figure, plt.Axes):
+    """Plots the predicted and ground truth values of the PDE.
+
+    Args:
+        prediction (Tensor): The predicted values.
+        ground_truth (Tensor): The ground truth values.
+        params (dict, optional): Parameters for the plot. Defaults to {}.
+
+    Returns:
+        fig, axes: The figure and axes of the plot.
+    """
     prediction = np.reshape(
         prediction, (params["data"]["grid"], params["data"]["grid"])
     )

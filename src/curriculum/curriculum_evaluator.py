@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 from torch import nn
 from torch.nn.modules.loss import _Loss
@@ -5,16 +7,11 @@ from torch.utils.data import DataLoader
 
 
 class CurriculumEvaluator:
-    """Evaluator class for the curriculum learning process.
+    """Base class for curriculum evaluator.
 
     This class is responsible for evaluating the model using the curriculum learning process.
-    The training process is defined by the user by extending this class and implementing the
+    The evaluation process is defined by the user by extending this class and implementing the
     run method.
-
-    Args:
-        model (nn.Module): model to train
-        loss (_Loss): loss module used for training
-        data_loader (DataLoader): data loader to use
     """
 
     def __init__(
@@ -24,8 +21,21 @@ class CurriculumEvaluator:
         data_loader: DataLoader,
         curriculum_step: int,
         hyperparameters: dict,
+        logging_path: Optional[str] = None,
+        device: str = (
+            torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        ),
         **kwargs
     ) -> None:
+        """Initializes the curriculum evaluator.
+
+        Args:
+            model (nn.Module): The model to be evaluated.
+            loss (_Loss): The loss module (or function) to be used.
+            data_loader (DataLoader): The data loader to be used.
+            curriculum_step (int): The current curriculum step.
+            hyperparameters (dict): Hyperparameters of the curriculum learning process.
+        """
         # Model, optimizer, loss module and data loader
         self.model: nn.Module = model
         self.loss: _Loss = loss
@@ -36,9 +46,8 @@ class CurriculumEvaluator:
         self.hyperparameters: dict = hyperparameters
 
         # Other
-        self.device: str = (
-            torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-        )
+        self.logging_path: Optional[str] = logging_path
+        self.device: str = device
         self.kwargs = kwargs
 
     def run(self) -> None:

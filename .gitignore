@@ -11,3 +11,4 @@ wandb/
 
 # Ignore data files
 data/
+!src/data/

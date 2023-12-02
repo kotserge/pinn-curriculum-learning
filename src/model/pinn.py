@@ -4,7 +4,21 @@ import torch.nn.functional as F
 
 
 class PINNModel(nn.Module):
-    def __init__(self, input_dim, hidden_dim):
+    """Implements the neural network model for the PINN from paper
+    'Characterizing possible failure modes in physics-informed neural networks.' by Krishnapriyan, Aditi, et al.
+    from https://arxiv.org/abs/2109.01050
+
+    Args:
+        nn (Module): The neural network module from PyTorch.
+    """
+
+    def __init__(self, input_dim: int = 2, hidden_dim: int = 50) -> None:
+        """Initializes the neural network model.
+
+        Args:
+            input_dim (int): Input dimension of the neural network. Defaults to 2.
+            hidden_dim (int): Hidden dimension of the neural network. Defaults to 50.
+        """
         super(PINNModel, self).__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
