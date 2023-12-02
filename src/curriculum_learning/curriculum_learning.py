@@ -22,10 +22,11 @@ class CurriculumLearning:
         self,
         model: nn.Module,
         optimizer: Optimizer,
-        loss_module: _Loss,
+        loss: _Loss,
         scheduler: CurriculumScheduler,
         trainer: Type[CurriculumTrainer],
         evaluator: Type[CurriculumEvaluator],
+        hyperparameters: dict,
         device: str = (
             torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         ),
@@ -35,12 +36,15 @@ class CurriculumLearning:
         # Model, optimizer, loss module and data loader
         self.model: nn.Module = model
         self.optimizer: Optimizer = optimizer
-        self.loss_module: _Loss = loss_module
+        self.loss: _Loss = loss
 
         # Curriculum learning components
         self.scheduler: CurriculumScheduler = scheduler
         self.trainer: Type[CurriculumTrainer] = trainer
         self.evaluator: Type[CurriculumEvaluator] = evaluator
+
+        # Hyperparameters
+        self.hyperparameters: dict = hyperparameters
 
         # Other
         self.device: str = device
@@ -62,7 +66,7 @@ class CurriculumLearning:
     def run(self) -> None:
         """Runs the curriculum learning process."""
 
-        self.init_logging(overview=self.scheduler.get_parameters(overview=True))
+        self.init_logging()
 
         while self.scheduler.has_next():
             # Update scheduler
@@ -72,26 +76,30 @@ class CurriculumLearning:
             tdata_loader = self.scheduler.get_train_data_loader()
             vdata_loader = self.scheduler.get_validation_data_loader()
             edata_loader = self.scheduler.get_test_data_loader()
-            parameters = self.scheduler.get_parameters()
 
             # Start training
             trainer = self.trainer(
                 self.model,
                 self.optimizer,
-                self.loss_module,
+                self.loss,
                 tdata_loader,
                 vdata_loader,
-                parameters,
+                self.scheduler.curriculum_step,
+                self.hyperparameters,
             )
             trainer.run(**self.kwargs)
 
             # Evaluate model
             evaluator = self.evaluator(
-                self.model, self.loss_module, edata_loader, parameters
+                self.model,
+                self.loss,
+                edata_loader,
+                self.scheduler.curriculum_step,
+                self.hyperparameters,
             )
             evaluator.run(**self.kwargs)
 
             # Logging
-            self.curriculum_step_logging(model=self.model, parameters=parameters)
+            self.curriculum_step_logging(model=self.model)
 
-        self.end_logging(model=self.model, parameters=parameters)
+        self.end_logging(model=self.model)

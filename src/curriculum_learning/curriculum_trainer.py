@@ -26,21 +26,23 @@ class CurriculumTrainer:
         self,
         model: nn.Module,
         optimizer: Optimizer,
-        loss_module: _Loss,
+        loss: _Loss,
         train_data_loader: DataLoader,
         validation_data_loader: DataLoader,
-        parameters: dict,
+        curriculum_step: int,
+        hyperparameters: dict,
         **kwargs,
     ) -> None:
         # Model, optimizer, loss module and data loader
         self.model: nn.Module = model
         self.optimizer: Optimizer = optimizer
-        self.loss_module: _Loss = loss_module
+        self.loss: _Loss = loss
         self.train_data_loader: DataLoader = train_data_loader
         self.validation_data_loader: DataLoader = validation_data_loader
 
         # Parameters
-        self.parameters: dict = parameters
+        self.curriculum_step: int = curriculum_step
+        self.hyperparameters: dict = hyperparameters
 
         # Other
         self.device: str = (

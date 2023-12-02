@@ -4,6 +4,7 @@ from tqdm import tqdm
 from matplotlib import pyplot as plt
 
 import wandb
+import yaml
 
 import numpy as np
 import torch
@@ -101,7 +102,7 @@ class ConvectiveCurriculumLearning(CurriculumLearning):
 
         # create wandb run
         wandb.login()
-        wandb.init(project="curriculum-learning", config=kwargs["overview"])
+        wandb.init(project="curriculum-learning", config=self.hyperparameters)
 
     def curriculum_step_logging(self, **kwargs) -> None:
         """Logging for each curriculum step."""
@@ -134,54 +135,40 @@ class ConvectionCurriculumScheduler(CurriculumScheduler):
 
     def __init__(
         self,
-        start: int,
-        end: int,
-        step: int,
         hyperparameters: dict,
-        epochs: int,
-        batch_size: int,
-        l: float = 2 * np.pi,
-        t: int = 1,
-        n: int = 50,
-        snr: int = 0,
     ) -> None:
         """Builds a scheduler for the convection equation PDE.
 
-        Args:
-            start (int): starting curriculum step
-            end (int): ending curriculum step
-            step (int): curriculum step size
-            epochs (int): number of epochs
+        Hyperparameters args:
+            scheduler.curriculum.start (int): starting curriculum step
+            scheduler.curriculum.end (int): ending curriculum step
+            scheduler.curriculum.step (int): curriculum step size
+            scheduler.training.epochs (int): number of epochs
             batch_size (int): batch size
-            l (float, optional): length of the domain. Defaults to 2 * np.pi.
-            t (int, optional): time of the simulation. Defaults to 1.
-            n (int, optional): number of grid points. Defaults to 50.
-            snr (int, optional): noise to be added. If zero, no noise will be added to solution. Defaults to 0.
+            scheduler.
+            t (int): time of the simulation. Defaults to 1.
+            n (int): number of grid points. Defaults to 50.
+            convection (list[int]): convection coefficient. Defaults to 1.
+            snr (int): noise to be added. If zero, no noise will be added to solution. Defaults to 0.
         """
-        super().__init__(start, end, step, hyperparameters)
-
-        # Parameters for training
-        self.epochs: int = epochs
-        self.batch_size: int = batch_size
-
-        # PDE parameters
-        self.l: float = l
-        self.t: int = t
-        self.n: int = n
-        self.snr: int = snr
+        super().__init__(hyperparameters)
 
     def get_train_data_loader(self, **kwargs) -> data.DataLoader:
         """Returns a data loader for the current curriculum step."""
+        convection = self.hyperparameters["scheduler"]["pde"]["convection"]
+        if isinstance(convection, list):
+            convection = convection[self.curriculum_step]
+
         return data.DataLoader(
             ConvectionEquationPDEDataset(
-                l=self.l,
-                t=self.t,
-                n=self.n,
-                convection=self.curriculum_step,
-                snr=self.snr,
+                l=hyperparameters["scheduler"]["pde"]["l"],
+                t=hyperparameters["scheduler"]["pde"]["t"],
+                n=hyperparameters["scheduler"]["pde"]["n"],
+                convection=convection,
+                snr=hyperparameters["scheduler"]["pde"]["snr"],
             ),
-            batch_size=self.batch_size,
-            shuffle=True,
+            batch_size=self.hyperparameters["scheduler"]["data"]["batch_size"],
+            shuffle=self.hyperparameters["scheduler"]["data"]["shuffle"],
             **kwargs,
         )
 
@@ -191,61 +178,21 @@ class ConvectionCurriculumScheduler(CurriculumScheduler):
 
     def get_test_data_loader(self, **kwargs) -> data.DataLoader:
         """The test data loader returns the same data as the train data loader"""
+        convection = self.hyperparameters["scheduler"]["pde"]["convection"]
+        if isinstance(convection, list):
+            convection = convection[self.curriculum_step]
+
         return data.DataLoader(
             ConvectionEquationPDEDataset(
-                l=self.l,
-                t=self.t,
-                n=self.n,
-                convection=self.curriculum_step,
-                snr=self.snr,
+                l=hyperparameters["scheduler"]["pde"]["l"],
+                t=hyperparameters["scheduler"]["pde"]["t"],
+                n=hyperparameters["scheduler"]["pde"]["n"],
+                convection=convection,
+                snr=hyperparameters["scheduler"]["pde"]["snr"],
             ),
-            batch_size=self.batch_size,
+            batch_size=self.hyperparameters["scheduler"]["data"]["batch_size"],
             **kwargs,
         )
-
-    def get_parameters(self, overview: bool = False) -> dict:
-        """Returns parameters for the current curriculum step."""
-
-        if overview:
-            return {
-                "curriculum": {
-                    "curriculum_step": list(range(self.start, self.end + 1, self.step)),
-                    "start": self.start,
-                    "step": self.step,
-                    "end": self.end,
-                },
-                "training": {
-                    "epochs": self.epochs,
-                },
-                "pde": {
-                    "l": self.l,
-                    "t": self.t,
-                    "n": self.n,
-                    "convection": list(range(self.start, self.end + 1, self.step)),
-                    "snr": self.snr,
-                },
-                **self.hyperparameters,
-            }
-
-        return {
-            "curriculum": {
-                "curriculum_step": self.curriculum_step,
-                "start": self.start,
-                "step": self.step,
-                "end": self.end,
-            },
-            "training": {
-                "epochs": self.epochs,
-            },
-            "pde": {
-                "l": self.l,
-                "t": self.t,
-                "n": self.n,
-                "convection": self.curriculum_step,
-                "snr": self.snr,
-            },
-            **self.hyperparameters,
-        }
 
 
 # --- Trainer ---
@@ -262,7 +209,7 @@ class ConvectionEquationTrainer(CurriculumTrainer):
         self.model.train()
         self.optimizer.zero_grad()
 
-        for _ in tqdm(range(self.parameters["training"]["epochs"]), miniters=0):
+        for _ in tqdm(range(self.hyperparameters["training"]["epochs"]), miniters=0):
             # Epoch loss aggregator
             # epoch_loss_aggregation = 0.0
 
@@ -280,12 +227,14 @@ class ConvectionEquationTrainer(CurriculumTrainer):
                 prediction = self.model(x, t)  # .squeeze(dim=1)
 
                 ## Step 3 - Calculate the loss using the module loss_module
-                loss, _, _ = self.loss_module(
+                loss, _, _ = self.loss(
                     prediction,
                     data_labels,
                     x,
                     t,
-                    self.parameters["pde"]["convection"],
+                    self.hyperparameters["scheduler"]["pde"]["convection"][
+                        self.curriculum_step
+                    ],
                     model,
                 )
 
@@ -339,12 +288,14 @@ class ConvectionEquationEvaluator(CurriculumEvaluator):
             prediction = self.model(x, t)
 
             ## Step 3 - Calculate the losses
-            loss, loss_mse, loss_pde = self.loss_module(
+            loss, loss_mse, loss_pde = self.loss(
                 prediction,
                 data_labels,
                 x,
                 t,
-                self.parameters["pde"]["convection"],
+                self.hyperparameters["scheduler"]["pde"]["convection"][
+                    self.curriculum_step
+                ],
                 model,
             )
 
@@ -369,15 +320,15 @@ class ConvectionEquationEvaluator(CurriculumEvaluator):
                     "prediction": "Neural Network PDE Solution",
                 },
                 "data": {
-                    "grid": self.parameters["pde"]["n"],
+                    "grid": self.hyperparameters["scheduler"]["pde"]["n"],
                     "extent": [
                         0,
-                        self.parameters["pde"]["t"],
+                        self.hyperparameters["scheduler"]["pde"]["t"],
                         0,
-                        self.parameters["pde"]["l"],
+                        self.hyperparameters["scheduler"]["pde"]["l"],
                     ],
                 },
-                "savefig_path": f"./tmp/results_convection_curriculum_{self.parameters['curriculum']['curriculum_step']}.png",
+                "savefig_path": f"./tmp/results_convection_curriculum_{self.curriculum_step}.png",
             },
         )
 
@@ -387,8 +338,10 @@ class ConvectionEquationEvaluator(CurriculumEvaluator):
                 "Loss Overall": loss,
                 "Loss MSE": loss_mse,
                 "Loss PDE": loss_pde,
-                "Curriculum Step": self.parameters["curriculum"]["curriculum_step"],
-                "Convection Coefficient": self.parameters["pde"]["convection"],
+                "Curriculum Step": self.curriculum_step,
+                "Convection Coefficient": self.hyperparameters["scheduler"]["pde"][
+                    "convection"
+                ][self.curriculum_step],
                 "PDE Prediction": fig,
             }
         )
@@ -398,48 +351,73 @@ class ConvectionEquationEvaluator(CurriculumEvaluator):
 
 
 if __name__ == "__main__":
-    hyperparameters = {
-        "model": {
-            "input_dim": 2,
-            "hidden_dim": 50,
-        },
-        "optimizer": {
-            "name": "Adam",
-            "lr": 0.1,
-        },
-        "loss": {
-            "name": "ConvectionLoss",
-        },
-        "precision": "float64",
-    }
+    # hyperparameters = {
+    #     "overview": {
+    #         "name": "Convection Equation Curriculum Learning",
+    #         "description": "Curriculum learning for the convection equation PDE.",
+    #     },
+    #     "model": {
+    #         "input_dim": 2,
+    #         "hidden_dim": 50,
+    #     },
+    #     "optimizer": {
+    #         "name": "Adam",
+    #         "lr": 0.1,
+    #     },
+    #     "loss": {
+    #         "name": "ConvectionLoss",
+    #     },
+    #     "scheduler": {
+    #         "data": {
+    #             "batch_size": 64,
+    #             "shuffle": False,
+    #         },
+    #         "pde": {
+    #             "l": 2 * np.pi,
+    #             "t": 1,
+    #             "n": 50,
+    #             "convection": list(range(1, 31)),
+    #             "snr": 0,
+    #         },
+    #         "curriculum": {
+    #             "start": 0,
+    #             "end": 29,
+    #             "step": 1,
+    #             "baseline": False,
+    #         },
+    #     },
+    #     "training": {
+    #         "epochs": 50,
+    #     },
+    #     "precision": "float64",
+    # }
+
+    with open("./config/convection_curriculum_learning_test.yml", "r") as file:
+        hyperparameters = yaml.safe_load(file)
 
     model = PINNModel(
         input_dim=hyperparameters["model"]["input_dim"],
         hidden_dim=hyperparameters["model"]["hidden_dim"],
     ).to(torch.float64)
-    optimizer = optim.Adam(model.parameters(), lr=hyperparameters["optimizer"]["lr"])
+    optimizer = optim.Adam(
+        model.parameters(),
+        lr=hyperparameters["optimizer"]["lr"],
+        weight_decay=hyperparameters["optimizer"]["weight_decay"],
+    )
     loss = convection_loss
 
     scheduler = ConvectionCurriculumScheduler(
-        start=1,
-        end=30,
-        step=1,
-        epochs=200,
-        batch_size=64,
-        l=2 * np.pi,
-        t=1,
-        n=50,
-        snr=0,
         hyperparameters=hyperparameters,
     )
 
     learner = ConvectiveCurriculumLearning(
-        model,
-        optimizer,
-        loss,
-        scheduler,
-        ConvectionEquationTrainer,
-        ConvectionEquationEvaluator,
+        model=model,
+        optimizer=optimizer,
+        loss=loss,
+        scheduler=scheduler,
+        trainer=ConvectionEquationTrainer,
+        evaluator=ConvectionEquationEvaluator,
+        hyperparameters=hyperparameters,
     )
 
     learner.run()

@@ -17,15 +17,23 @@ class CurriculumScheduler:
         hyperparameters (dict): hyperparameters, describing the model, optimizer, loss function
     """
 
-    def __init__(self, start: int, end: int, step: int, hyperparameters: dict) -> None:
+    def __init__(self, hyperparameters: dict) -> None:
         super().__init__()
+        assert (
+            "start" in hyperparameters["scheduler"]["curriculum"]
+        ), "start parameter is required"
+        assert (
+            "end" in hyperparameters["scheduler"]["curriculum"]
+        ), "end parameter is required"
+        assert (
+            "step" in hyperparameters["scheduler"]["curriculum"]
+        ), "step parameter is required"
 
         # Curriculum parameters
-        self.curriculum_step = start - step
-
-        self.start: int = start
-        self.step: int = step
-        self.end: int = end
+        self.start: int = hyperparameters["scheduler"]["curriculum"]["start"]
+        self.step: int = hyperparameters["scheduler"]["curriculum"]["step"]
+        self.end: int = hyperparameters["scheduler"]["curriculum"]["end"]
+        self.curriculum_step = self.start - self.step
 
         self.hyperparameters: dict = hyperparameters
 
@@ -49,5 +57,6 @@ class CurriculumScheduler:
     def get_test_data_loader(self) -> DataLoader:
         raise NotImplementedError("get_test_data_loader method is not implemented")
 
-    def get_parameters(self, overview: bool = False) -> dict:
+    def get_parameters(self) -> dict:
+        """Returns the parameters for the current curriculum step."""
         raise NotImplementedError("get_parameters method is not implemented")
