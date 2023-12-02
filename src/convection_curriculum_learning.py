@@ -137,10 +137,10 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
 
         # create directory for model
         self.logging_path = f"data/run/{self.timestamp}-{self._id}/"
-        self.model_path = f"{self.run_path}/model/"
-        self.image_path = f"{self.run_path}/images/"
+        self.model_path = f"{self.logging_path}/model/"
+        self.image_path = f"{self.logging_path}/images/"
 
-        os.makedirs(self.run_path, exist_ok=True)
+        os.makedirs(self.logging_path, exist_ok=True)
         os.makedirs(self.model_path, exist_ok=True)
         os.makedirs(self.image_path, exist_ok=True)
 
@@ -413,7 +413,7 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                         self.hyperparameters["scheduler"]["pde"]["l"],
                     ],
                 },
-                "savefig_path": f"{self.run_path}/images/results_convection_curriculum_{self.curriculum_step}.png",
+                "savefig_path": f"{self.logging_path}/images/results_convection_curriculum_{self.curriculum_step}.png",
             },
         )
 

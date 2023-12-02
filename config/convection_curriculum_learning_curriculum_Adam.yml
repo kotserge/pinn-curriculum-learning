@@ -56,7 +56,7 @@ scheduler:
         30,
       ]
     l: 6.283185307179586
-    n: 150
+    n: 100
     snr: 0
     t: 1
   curriculum:
