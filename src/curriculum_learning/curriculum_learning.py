@@ -1,10 +1,10 @@
-from typing import Type
+from typing import Type, Optional
 
 import torch
 from torch import nn
 from torch.optim import Optimizer
 from torch.nn.modules.loss import _Loss
-from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import _LRScheduler
 
 from .curriculum_evaluator import CurriculumEvaluator
 from .curriculum_scheduler import CurriculumScheduler
@@ -45,11 +45,17 @@ class CurriculumLearning:
 
         # Hyperparameters
         self.hyperparameters: dict = hyperparameters
+        self.baseline: bool = not hyperparameters["learning"]["curriculum"]
 
         # Other
         self.device: str = device
         self.logging: bool = logging
         self.kwargs = kwargs
+
+        # Preparation for baseline training (i.e. model is reset to initial state after each curriculum step)
+        if self.baseline:
+            self.init_model_state_dict = self.model.state_dict()
+            self.init_optimizer_state_dict = self.optimizer.state_dict()
 
     def init_logging(self, **kwargs) -> None:
         """Initial logging, before the curriculum learning process starts."""
@@ -101,5 +107,10 @@ class CurriculumLearning:
 
             # Logging
             self.curriculum_step_logging(model=self.model)
+
+            # Reset model to initial state if baseline training is used
+            if self.baseline:
+                self.model.load_state_dict(self.init_model_state_dict)
+                self.optimizer.load_state_dict(self.init_optimizer_state_dict)
 
         self.end_logging(model=self.model)

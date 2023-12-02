@@ -1,7 +1,12 @@
 overview:
-  name: "Test of Convection Equation Curriculum Learning"
-  description: "Test of Curriculum Learning for Convection Equation"
+  project: "Curriculum Learning Convection Equation"
+  # id: "Convection Curriculum Learning Test 1"
+  group: "Adam Optimizer; Baseline"
+  name: "Convection Equation Curriculum Learning"
+  description: "Curriculum Learning for Convection Equation"
   version: "0.0.1"
+learning:
+  curriculum: False
 model:
   input_dim: 2
   hidden_dim: 50
@@ -14,7 +19,7 @@ loss:
   custom: True
 scheduler:
   data:
-    batch_size: 64
+    batch_size: full
     shuffle: False
   pde:
     convection:
@@ -51,13 +56,14 @@ scheduler:
         30,
       ]
     l: 6.283185307179586
-    n: 50
+    n: 150
     snr: 0
     t: 1
   curriculum:
-    baseline: false
     end: 29
     start: 0
     step: 1
 training:
-  epochs: 50
+  epochs: 100
+  stopping:
+    patience: 10

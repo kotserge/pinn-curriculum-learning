@@ -121,5 +121,4 @@ class ConvectionEquationSolver(PDESolver):
             allow_unused=True,
         )[0]
 
-        f = du_dt + c * du_dx
-        return f
+        return torch.add(du_dt, torch.mul(c, du_dx))

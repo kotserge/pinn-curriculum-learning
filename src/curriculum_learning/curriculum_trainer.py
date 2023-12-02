@@ -1,6 +1,9 @@
+from typing import Optional
+
 import torch
 from torch import nn
 from torch.optim import Optimizer
+from torch.optim.lr_scheduler import _LRScheduler
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 
@@ -50,6 +53,31 @@ class CurriculumTrainer:
         )
         self.kwargs = kwargs
 
+    def closure(self) -> torch.Tensor:
+        """Closure for the optimizer.
+        This method is intended to calculate loss terms, propagate gradients and return the loss value.
+        Compare: https://pytorch.org/docs/stable/optim.html
+        """
+        raise NotImplementedError("closure method is not implemented")
+
     def run(self, **kwargs) -> None:
         """Runs the training process."""
         raise NotImplementedError("run method is not implemented")
+
+    def _optimize(self) -> torch.Tensor:
+        """Internal method for optimizing the model.
+        This method helps to correctly handle the optimizer and the closure method.
+
+        Returns:
+            torch.Tensor: The loss value.
+        """
+        if type(self.optimizer).__name__ in ["LBFGS"]:
+            loss = self.optimizer.step(self.closure)
+        else:
+            loss = self.closure()
+            self.optimizer.step()
+
+        # if self.lr_scheduler is not None:
+        #     self.lr_scheduler.step()
+
+        return loss

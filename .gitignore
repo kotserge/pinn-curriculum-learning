@@ -9,5 +9,5 @@ __pycache__/
 # Ignore wandb files
 wandb/
 
-# Ignore model checkpoints
-model/
+# Ignore data files
+data/

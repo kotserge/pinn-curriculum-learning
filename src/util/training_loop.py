@@ -98,7 +98,7 @@ class TrainingFactory:
                 ## Step 1 - Move input data to device
                 data_inputs, data_labels = data_inputs.to(self.device), data_labels.to(
                     self.device
-                ).to(torch.float64)
+                ).to(torch.float)
 
                 ## Step 2 - Run the model on the input data
                 prediction = self.model(data_inputs)  # .squeeze(dim=1)

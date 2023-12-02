@@ -18,10 +18,16 @@ This repository contains example for PINN with curriculum learning for solving P
 - [x] Implementation of curriculum learning
 - [x] Visualization of results (e.g. prediction and ground truth for $u(x, t)$, other metrics (wandb logging))
   - [ ] Logging during training loop of curriculum learning is tricky with W&B. Find a clever way to do it.
-- [X] YAML config file for training
-- [X] Shuffle?
-- [ ] Baseline implementation (i.e. PINN without curriculum learning)
-- [ ] Figure out closure for `torch.optim.LBFGS`
+- [x] YAML config file for training
+- [x] Shuffle?
+- [x] Figure out closure for `torch.optim.LBFGS`
+  - [ ] Still buggy
+- [x] Small improvements
+  - [x] save path
+  - [x] Better CLI Logging of run
+- [x] Seeding? (e.g. `torch.manual_seed(n)`)
+- [x] Baseline implementation (i.e. PINN without curriculum learning)
+- [x] Stopping criterion (e.g. early stopping, etc.)
 - [ ] Documentation Code (e.g. docstrings, comments, etc.)
 - [ ] Documentation (e.g. `README.md`, `requirements.txt`, `setup.py`, `LICENSE`, Code Documentation etc.)
 

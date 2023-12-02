@@ -97,27 +97,40 @@ class ConvectiveCurriculumLearning(CurriculumLearning):
         """Initial logging, before the curriculum learning process starts."""
         self.timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-        # create directory for model
-        os.makedirs(f"model/{self.timestamp}", exist_ok=True)
-
         # create wandb run
         wandb.login()
-        wandb.init(project="curriculum-learning", config=self.hyperparameters)
+
+        group = (
+            self.hyperparameters["overview"]["group"]
+            if "group" in self.hyperparameters["overview"]
+            else None
+        )
+        run = wandb.init(
+            project=self.hyperparameters["overview"]["project"],
+            group=group,
+            config=self.hyperparameters,
+        )
+        self._id = run.name
+
+        # create directory for model
+        self.run_path = f"data/run/{self._id}-{self.timestamp}/"
+        self.model_path = f"{self.run_path}/model/"
+
+        os.makedirs(self.run_path, exist_ok=True)
+        os.makedirs(self.model_path, exist_ok=True)
 
     def curriculum_step_logging(self, **kwargs) -> None:
         """Logging for each curriculum step."""
-        print(f"Current curriculum step: {self.scheduler.curriculum_step}")
         torch.save(
             self.model.state_dict(),
-            f"model/{self.timestamp}/convection_with_curriculum_{self.scheduler.curriculum_step}.pth",
+            f"{self.model_path}/model_curriculum_step_{self.scheduler.curriculum_step}.pth",
         )
 
     def end_logging(self, **kwargs) -> None:
         """Logging after the curriculum learning process ends."""
-        print("Curriculum learning finished.")
         torch.save(
             self.model.state_dict(),
-            f"model/{self.timestamp}/convection_with_curriculum_final.pth",
+            f"{self.model_path}/model_final.pth",
         )
         wandb.finish()
 
@@ -155,19 +168,12 @@ class ConvectionCurriculumScheduler(CurriculumScheduler):
 
     def get_train_data_loader(self, **kwargs) -> data.DataLoader:
         """Returns a data loader for the current curriculum step."""
-        convection = self.hyperparameters["scheduler"]["pde"]["convection"]
-        if isinstance(convection, list):
-            convection = convection[self.curriculum_step]
-
+        dataset = self._get_parameterized_dataset(**kwargs)
         return data.DataLoader(
-            ConvectionEquationPDEDataset(
-                l=hyperparameters["scheduler"]["pde"]["l"],
-                t=hyperparameters["scheduler"]["pde"]["t"],
-                n=hyperparameters["scheduler"]["pde"]["n"],
-                convection=convection,
-                snr=hyperparameters["scheduler"]["pde"]["snr"],
-            ),
-            batch_size=self.hyperparameters["scheduler"]["data"]["batch_size"],
+            dataset=dataset,
+            batch_size=len(dataset)
+            if self.hyperparameters["scheduler"]["data"]["batch_size"] == "full"
+            else self.hyperparameters["scheduler"]["data"]["batch_size"],
             shuffle=self.hyperparameters["scheduler"]["data"]["shuffle"],
             **kwargs,
         )
@@ -178,20 +184,31 @@ class ConvectionCurriculumScheduler(CurriculumScheduler):
 
     def get_test_data_loader(self, **kwargs) -> data.DataLoader:
         """The test data loader returns the same data as the train data loader"""
+        dataset = self._get_parameterized_dataset(**kwargs)
+        return data.DataLoader(
+            dataset=dataset,
+            batch_size=len(dataset)
+            if self.hyperparameters["scheduler"]["data"]["batch_size"] == "full"
+            else self.hyperparameters["scheduler"]["data"]["batch_size"],
+            **kwargs,
+        )
+
+    def _get_parameterized_dataset(self, **kwargs) -> data.Dataset:
+        """Returns a parameterized dataset for the current curriculum step.
+
+        Returns:
+            data.Dataset: parameterized dataset
+        """
         convection = self.hyperparameters["scheduler"]["pde"]["convection"]
         if isinstance(convection, list):
             convection = convection[self.curriculum_step]
 
-        return data.DataLoader(
-            ConvectionEquationPDEDataset(
-                l=hyperparameters["scheduler"]["pde"]["l"],
-                t=hyperparameters["scheduler"]["pde"]["t"],
-                n=hyperparameters["scheduler"]["pde"]["n"],
-                convection=convection,
-                snr=hyperparameters["scheduler"]["pde"]["snr"],
-            ),
-            batch_size=self.hyperparameters["scheduler"]["data"]["batch_size"],
-            **kwargs,
+        return ConvectionEquationPDEDataset(
+            l=hyperparameters["scheduler"]["pde"]["l"],
+            t=hyperparameters["scheduler"]["pde"]["t"],
+            n=hyperparameters["scheduler"]["pde"]["n"],
+            convection=convection,
+            snr=hyperparameters["scheduler"]["pde"]["snr"],
         )
 
 
@@ -200,57 +217,72 @@ class ConvectionCurriculumScheduler(CurriculumScheduler):
 
 
 class ConvectionEquationTrainer(CurriculumTrainer):
+    def stopping_condition(self) -> bool:
+        """Returns true if the training should stop."""
+        # Initialize best loss and counter for early stopping if not already done
+        if not hasattr(self, "best_loss"):
+            self.best_loss = np.inf
+            self.counter = 0
+
+        # Check if loss is better than best loss
+        if self._batch_loss.item() < self.best_loss:
+            self.best_loss = self._batch_loss.item()
+            self.counter = -1
+        self.counter += 1
+
+        return self.counter > self.hyperparameters["training"]["stopping"]["patience"]
+
+    def closure(self) -> torch.Tensor:
+        """Closure for the optimizer.
+        This method is intended to calculate loss terms, propagate gradients and return the loss value.
+        Compare: https://pytorch.org/docs/stable/optim.html
+        """
+        self.optimizer.zero_grad()
+        prediction = self.model(self.closure_x, self.closure_t)
+        loss, _, _ = self.loss(
+            prediction,
+            self.closure_y,
+            self.closure_x,
+            self.closure_t,
+            self.hyperparameters["scheduler"]["pde"]["convection"][
+                self.curriculum_step
+            ],
+            model,
+        )
+        loss.backward()
+        return loss
+
     def run(self, **kwargs) -> None:
         """Runs the training process."""
 
-        # epoch_loss_mean = 0.0
-
+        # Set model to training mode
         self.model.to(self.device)
         self.model.train()
         self.optimizer.zero_grad()
 
-        for _ in tqdm(range(self.hyperparameters["training"]["epochs"]), miniters=0):
-            # Epoch loss aggregator
-            # epoch_loss_aggregation = 0.0
+        # Check, if stopping condition should be evaluated
+        eval_stopping_condition = "stopping" in self.hyperparameters["training"]
 
+        for _ in tqdm(range(self.hyperparameters["training"]["epochs"]), miniters=0):
             # Batch loop
             for batch, (data_inputs, data_labels) in enumerate(self.train_data_loader):
                 ## Step 1 - Move input data to device
-                data_inputs, data_labels = data_inputs.to(self.device), data_labels.to(
-                    self.device
-                ).to(torch.float64)
+                data_inputs, data_labels = data_inputs.to(self.device).to(
+                    torch.float64
+                ), data_labels.to(self.device).to(torch.float64)
 
-                # Step 1.5 - Change the data input
+                # Step 2 - Change the data input and move to closure help variables
                 x, t = data_inputs[:, 0].unsqueeze(1), data_inputs[:, 1].unsqueeze(1)
+                self.closure_x, self.closure_t, self.closure_y = x, t, data_labels
 
-                ## Step 2 - Run the model on the input data
-                prediction = self.model(x, t)  # .squeeze(dim=1)
+                ## Step 3 - Optimize the model parameters
+                self._batch_loss = self._optimize()
 
-                ## Step 3 - Calculate the loss using the module loss_module
-                loss, _, _ = self.loss(
-                    prediction,
-                    data_labels,
-                    x,
-                    t,
-                    self.hyperparameters["scheduler"]["pde"]["convection"][
-                        self.curriculum_step
-                    ],
-                    model,
-                )
+            if eval_stopping_condition and self.stopping_condition():
+                break
 
-                ## Step 4 - Perform backpropagation & update weights
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-
-                # Step 5 - Accumulate loss for current epoch
-                # epoch_loss_aggregation += loss.item()
-
-            # Step 6 - Log to wandb
+            # Step 4 - Log to wandb
             # TODO: Find out, how to log the loss for each epoch + curriculum step
-
-        # Step 7 - Final logging
-        print("-" * 50 + "\nTraining finished\n" + "-" * 50)
 
 
 # --- Evaluator ---
@@ -277,9 +309,9 @@ class ConvectionEquationEvaluator(CurriculumEvaluator):
         # Loop over batches
         for _, (data_inputs, data_labels) in enumerate(self.data_loader):
             ## Step 1 - Move input data to device
-            data_inputs, data_labels = data_inputs.to(self.device), data_labels.to(
-                self.device
-            ).to(torch.float64)
+            data_inputs, data_labels = data_inputs.to(self.device).to(
+                torch.float64
+            ), data_labels.to(self.device).to(torch.float64)
 
             # Step 1.5 - Change the data input
             x, t = data_inputs[:, 0].unsqueeze(1), data_inputs[:, 1].unsqueeze(1)
@@ -307,8 +339,6 @@ class ConvectionEquationEvaluator(CurriculumEvaluator):
             # Step 5 - Store predictions and ground truth
             predictions.append(prediction)
             ground_truths.append(data_labels)
-
-        print(f"Loss: {loss}, MSE: {loss_mse}, PDE: {loss_pde}")
 
         # Step 6 - Visualize predictions and ground truth
         fig, _ = comparison_plot(
@@ -346,66 +376,55 @@ class ConvectionEquationEvaluator(CurriculumEvaluator):
             }
         )
 
-        # Close figure
+        # Step 8 - Close figure
         plt.close(fig)
+
+        # Step 9 - CLI logging
+        print(
+            "-" * 50
+            + f"\nEvaluation Results for Curriculum Step {self.curriculum_step}\n"
+            + "-" * 50
+        )
+        print(f"Loss: {loss}, MSE: {loss_mse}, PDE: {loss_pde}")
+        print("-" * 50)
 
 
 if __name__ == "__main__":
-    # hyperparameters = {
-    #     "overview": {
-    #         "name": "Convection Equation Curriculum Learning",
-    #         "description": "Curriculum learning for the convection equation PDE.",
-    #     },
-    #     "model": {
-    #         "input_dim": 2,
-    #         "hidden_dim": 50,
-    #     },
-    #     "optimizer": {
-    #         "name": "Adam",
-    #         "lr": 0.1,
-    #     },
-    #     "loss": {
-    #         "name": "ConvectionLoss",
-    #     },
-    #     "scheduler": {
-    #         "data": {
-    #             "batch_size": 64,
-    #             "shuffle": False,
-    #         },
-    #         "pde": {
-    #             "l": 2 * np.pi,
-    #             "t": 1,
-    #             "n": 50,
-    #             "convection": list(range(1, 31)),
-    #             "snr": 0,
-    #         },
-    #         "curriculum": {
-    #             "start": 0,
-    #             "end": 29,
-    #             "step": 1,
-    #             "baseline": False,
-    #         },
-    #     },
-    #     "training": {
-    #         "epochs": 50,
-    #     },
-    #     "precision": "float64",
-    # }
-
-    with open("./config/convection_curriculum_learning_test.yml", "r") as file:
+    # Load hyperparameters
+    with open(
+        "./config/convection_curriculum_learning_curriculum_Adam.yml", "r"
+    ) as file:
         hyperparameters = yaml.safe_load(file)
+    # with open("./config/convection_curriculum_learning_test_LBFGS.yml", "r") as file:
+    #     hyperparameters = yaml.safe_load(file)
 
+    # Seeding
+    if "seed" in hyperparameters["learning"]:
+        print(f"Using seed {hyperparameters['learning']['seed']}")
+        torch.manual_seed(hyperparameters["learning"]["seed"])
+        np.random.seed(hyperparameters["learning"]["seed"])
+
+    # Initialize model, optimizer, loss module and data loader
     model = PINNModel(
         input_dim=hyperparameters["model"]["input_dim"],
         hidden_dim=hyperparameters["model"]["hidden_dim"],
     ).to(torch.float64)
+
     optimizer = optim.Adam(
         model.parameters(),
         lr=hyperparameters["optimizer"]["lr"],
         weight_decay=hyperparameters["optimizer"]["weight_decay"],
     )
+    # optimizer = optim.LBFGS(
+    #     model.parameters(),
+    #     lr=hyperparameters["optimizer"]["lr"],
+    #     history_size=hyperparameters["optimizer"]["history_size"],
+    #     max_iter=hyperparameters["optimizer"]["max_iter"],
+    # )
+
     loss = convection_loss
 
+    # Init curriculum learning components
     scheduler = ConvectionCurriculumScheduler(
         hyperparameters=hyperparameters,
     )
