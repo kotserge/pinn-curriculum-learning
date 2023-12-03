@@ -1,6 +1,5 @@
 overview:
   project: "Curriculum Learning Convection Equation"
-  # id: "Convection Curriculum Learning Test 1"
   group: "Adam Optimizer; Curriculum Learning"
   name: "Convection Equation Curriculum Learning"
   description: "Curriculum Learning for Convection Equation"
@@ -13,10 +12,11 @@ model:
 optimizer:
   name: Adam
   lr: 0.01
-  weight_decay: 0.01
+  weight_decay: 0.001
 loss:
   name: ConvectionLoss
   custom: True
+  regularization: 1
 scheduler:
   data:
     batch_size: full
@@ -64,6 +64,6 @@ scheduler:
     start: 0
     step: 1
 training:
-  epochs: 100
+  epochs: 200
   stopping:
-    patience: 10
+    patience: 20

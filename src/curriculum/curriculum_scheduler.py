@@ -9,7 +9,7 @@ class CurriculumScheduler:
     get_train_data_loader, get_validation_data_loader and get_test_data_loader methods.
     """
 
-    def __init__(self, hyperparameters: dict) -> None:
+    def __init__(self, hyperparameters: dict, **kwargs) -> None:
         """Initializes the curriculum scheduler.
 
         Args:
@@ -33,6 +33,9 @@ class CurriculumScheduler:
         self.curriculum_step = self.start - self.step
 
         self.hyperparameters: dict = hyperparameters
+
+        # Other parameters
+        self.kwargs = kwargs
 
     def next(self) -> None:
         """Proceeds to the next curriculum step."""

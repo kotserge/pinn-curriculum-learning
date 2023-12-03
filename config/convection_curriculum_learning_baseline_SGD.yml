@@ -1,19 +1,20 @@
 overview:
   project: "Curriculum Learning Convection Equation"
-  group: "LBFGS Optimizer; Curriculum Learning"
+  group: "SGD Optimizer; Baseline"
   name: "Convection Equation Curriculum Learning"
   description: "Curriculum Learning for Convection Equation"
   version: "0.0.1"
 learning:
-  curriculum: True
+  curriculum: False
 model:
   input_dim: 2
   hidden_dim: 50
 optimizer:
-  name: LBFGS
-  lr: 0.5
-  history_size: 10
-  max_iter: 5
+  name: SGD
+  lr: 0.0005
+  weight_decay: 0.001
+  momentum: 0.9
+  nesterov: True
 loss:
   name: ConvectionLoss
   custom: True
@@ -57,7 +58,7 @@ scheduler:
         30,
       ]
     l: 6.283185307179586
-    n: 150
+    n: 100
     snr: 0
     t: 1
   curriculum:

@@ -1,23 +1,23 @@
 overview:
   project: "Curriculum Learning Convection Equation"
-  # id: "Convection Curriculum Learning Test 1"
-  group: "LBFGS Optimizer; Curriculum Learning"
+  group: "LBFGS Optimizer; Baseline"
   name: "Convection Equation Curriculum Learning"
   description: "Curriculum Learning for Convection Equation"
   version: "0.0.1"
 learning:
-  curriculum: True
+  curriculum: False
 model:
   input_dim: 2
   hidden_dim: 50
 optimizer:
   name: LBFGS
-  lr: 1
+  lr: 0.5
   history_size: 10
   max_iter: 5
 loss:
   name: ConvectionLoss
   custom: True
+  regularization: 1
 scheduler:
   data:
     batch_size: full
@@ -65,4 +65,6 @@ scheduler:
     start: 0
     step: 1
 training:
-  epochs: 100
+  epochs: 200
+  stopping:
+    patience: 20

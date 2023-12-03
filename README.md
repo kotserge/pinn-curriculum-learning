@@ -29,8 +29,15 @@ This repository contains example for PINN with curriculum learning for solving P
   - [x] save path
   - [x] Better CLI Logging of run
   - [x] Documentation Code (e.g. doc-strings, comments, etc.)
+  - [x] More Epochs
+  - [x] Keep track of early stopping epochs
   - [ ] Assertion tests (e.g. `assert x.shape == y.shape`)
 - [ ] Documentation (e.g. `README.md`, `requirements.txt`, `setup.py`, `LICENSE`, etc.)
+
+## Experiments
+
+- [x] Add SGD optimizer
+- [ ] Regularization term of the PDE loss; different $\lambda$'s (currently 1), as PDE loss is significantly lower than MSE loss
 
 ## Other
 
@@ -45,3 +52,9 @@ This repository contains example for PINN with curriculum learning for solving P
 
 - [ ] Report
   - [ ] Structure, content, etc. 
+
+- [ ] Email
+  - [ ] Screenshots of results
+  - [ ] Github link / invite
+  - [ ] Ask for next meeting
+  - [ ] Ask about LBFGS bad performance

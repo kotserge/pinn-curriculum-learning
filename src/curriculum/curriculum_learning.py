@@ -30,6 +30,7 @@ class CurriculumLearning:
         evaluator: Type[CurriculumEvaluator],
         hyperparameters: dict,
         logging_path: Optional[str] = None,
+        logging_dict: dict = None,
         device: str = (
             torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         ),
@@ -62,8 +63,11 @@ class CurriculumLearning:
         self.hyperparameters: dict = hyperparameters
         self.baseline: bool = not hyperparameters["learning"]["curriculum"]
 
+        # Logging
+        self.logging_path: Optional[str] = logging_path
+        self.logging_dict: dict = logging_dict if logging_dict is not None else {}
+
         # Other
-        self.logging_path: Optional[str] = None
         self.device: str = device
         self.kwargs = kwargs
 
@@ -96,7 +100,11 @@ class CurriculumLearning:
         If baseline training is used, the model is reset to the initial state after each curriculum step.
         """
 
-        self.init_logging()
+        self.init_logging(
+            model=self.model,
+            logging_path=self.logging_path,
+            logging_dict=self.logging_dict,
+        )
 
         while self.scheduler.has_next():
             # Update scheduler
@@ -118,6 +126,7 @@ class CurriculumLearning:
                 hyperparameters=self.hyperparameters,
                 device=self.device,
                 logging_path=self.logging_path,
+                logging_dict=self.logging_dict,
             )
             trainer.run(**self.kwargs)
 
@@ -130,15 +139,24 @@ class CurriculumLearning:
                 hyperparameters=self.hyperparameters,
                 device=self.device,
                 logging_path=self.logging_path,
+                logging_dict=self.logging_dict,
             )
             evaluator.run(**self.kwargs)
 
             # Logging
-            self.curriculum_step_logging(model=self.model)
+            self.curriculum_step_logging(
+                model=self.model,
+                logging_path=self.logging_path,
+                logging_dict=self.logging_dict,
+            )
 
             # Reset model to initial state if baseline training is used
             if self.baseline:
                 self.model.load_state_dict(self.init_model_state_dict)
                 self.optimizer.load_state_dict(self.init_optimizer_state_dict)
 
-        self.end_logging(model=self.model)
+        self.end_logging(
+            model=self.model,
+            logging_path=self.logging_path,
+            logging_dict=self.logging_dict,
+        )

@@ -1,18 +1,17 @@
-import time
 import os
+
+import time
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 
 import wandb
-import yaml
 
 import numpy as np
 import torch
-from torch import nn, optim, Tensor
+from torch import nn, Tensor
 from torch.utils.data import DataLoader, Dataset
 
 import curriculum
-import model
 import data
 import util
 
@@ -26,6 +25,7 @@ def convection_loss(
     x: Tensor,
     t: Tensor,
     convection: float,
+    regularization: float,
     model: nn.Module,
 ) -> Tensor:
     """Calculates the loss for the convection equation PDE.
@@ -49,9 +49,9 @@ def convection_loss(
         c=convection,
         model=model,
     )
-    loss_pde = torch.mean(loss_pde**2)  # PDE loss
+    loss_pde = torch.mean(torch.pow(loss_pde, 2))  # PDE loss
 
-    return loss_mse + loss_pde, loss_mse, loss_pde
+    return torch.add(loss_mse, torch.mul(regularization, loss_pde)), loss_mse, loss_pde
 
 
 # --- PDE Dataset---
@@ -144,6 +144,19 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         os.makedirs(self.model_path, exist_ok=True)
         os.makedirs(self.image_path, exist_ok=True)
 
+        # Create logging tables in logging dict
+        self.logging_dict["Epoch Loss"] = wandb.Table(
+            columns=["Curriculum Step", "Epoch", "Loss"]
+        )
+        self.logging_dict["Early Stopping Hit"] = wandb.Table(
+            columns=[
+                "Curriculum Step",
+                "Max Epoch",
+                "Epoch Stop",
+                "Relative Epochs",
+            ]
+        )
+
     def curriculum_step_logging(self, **kwargs) -> None:
         """Logging for each curriculum step.
 
@@ -163,6 +176,17 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             self.model.state_dict(),
             f"{self.model_path}/model_final.pth",
         )
+
+        # log final logging dict
+        wandb.log(
+            {
+                "Epoch Loss": self.logging_dict["Epoch Loss"],
+                "Early Stopping Hit": self.logging_dict["Early Stopping Hit"],
+            },
+            commit=True,
+            step=self.scheduler.curriculum_step,
+        )
+
         wandb.finish()
 
 
@@ -237,11 +261,11 @@ class ConvectionCurriculumScheduler(curriculum.CurriculumScheduler):
             convection = convection[self.curriculum_step]
 
         return ConvectionEquationPDEDataset(
-            spatial=hyperparameters["scheduler"]["pde"]["l"],
-            temporal=hyperparameters["scheduler"]["pde"]["t"],
-            grid_points=hyperparameters["scheduler"]["pde"]["n"],
+            spatial=self.hyperparameters["scheduler"]["pde"]["l"],
+            temporal=self.hyperparameters["scheduler"]["pde"]["t"],
+            grid_points=self.hyperparameters["scheduler"]["pde"]["n"],
             convection=convection,
-            snr=hyperparameters["scheduler"]["pde"]["snr"],
+            snr=self.hyperparameters["scheduler"]["pde"]["snr"],
         )
 
 
@@ -291,7 +315,8 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
             self.hyperparameters["scheduler"]["pde"]["convection"][
                 self.curriculum_step
             ],
-            model,
+            self.hyperparameters["loss"]["regularization"],
+            self.model,
         )
         loss.backward()
         return loss
@@ -307,7 +332,13 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
         # Check, if stopping condition should be evaluated
         eval_stopping_condition = "stopping" in self.hyperparameters["training"]
 
-        for _ in tqdm(range(self.hyperparameters["training"]["epochs"]), miniters=0):
+        # Epoch loop
+        for epoch in tqdm(
+            range(self.hyperparameters["training"]["epochs"]), miniters=0
+        ):
+            # Epoch loss aggregator
+            epoch_loss_aggregation = 0.0
+
             # Batch loop
             for batch, (data_inputs, data_labels) in enumerate(self.train_data_loader):
                 ## Step 1 - Move input data to device
@@ -322,11 +353,24 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
                 ## Step 3 - Optimize the model parameters
                 self._batch_loss = self._optimize()
 
+                # Step 4 - Accumulate loss for batches in current epoch
+                epoch_loss_aggregation += self._batch_loss.item()
+
+            # Step 5 - Epoch logging
+            self.logging_dict["Epoch Loss"].add_data(
+                self.curriculum_step, epoch, epoch_loss_aggregation
+            )
+
             if eval_stopping_condition and self.stopping_condition():
                 break
 
-            # Step 4 - Log to wandb
-            # TODO: Find out, how to log the loss for each epoch + curriculum step
+        # Step 6 - Early stopping logging
+        self.logging_dict["Early Stopping Hit"].add_data(
+            self.curriculum_step,
+            self.hyperparameters["training"]["epochs"],
+            (epoch + 1),
+            (epoch + 1) / self.hyperparameters["training"]["epochs"],
+        )
 
 
 # --- Evaluator ---
@@ -383,7 +427,8 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                 self.hyperparameters["scheduler"]["pde"]["convection"][
                     self.curriculum_step
                 ],
-                model,
+                self.hyperparameters["loss"]["regularization"],
+                self.model,
             )
 
             # Step 4 - Accumulate loss for current batch
@@ -428,7 +473,8 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                     "convection"
                 ][self.curriculum_step],
                 "PDE Prediction": fig,
-            }
+            },
+            step=self.curriculum_step,
         )
 
         # Step 8 - Close figure
@@ -442,56 +488,3 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
         )
         print(f"Loss: {loss}, MSE: {loss_mse}, PDE: {loss_pde}")
         print("-" * 50)
-
-
-if __name__ == "__main__":
-    # Load hyperparameters
-    with open(
-        "./config/convection_curriculum_learning_curriculum_Adam.yml", "r"
-    ) as file:
-        hyperparameters = yaml.safe_load(file)
-    # with open("./config/convection_curriculum_learning_test_LBFGS.yml", "r") as file:
-    #     hyperparameters = yaml.safe_load(file)
-
-    # Seeding
-    if "seed" in hyperparameters["learning"]:
-        print(f"Using seed {hyperparameters['learning']['seed']}")
-        torch.manual_seed(hyperparameters["learning"]["seed"])
-        np.random.seed(hyperparameters["learning"]["seed"])
-
-    # Initialize model, optimizer, loss module and data loader
-    model = model.PINNModel(
-        input_dim=hyperparameters["model"]["input_dim"],
-        hidden_dim=hyperparameters["model"]["hidden_dim"],
-    ).to(torch.float64)
-
-    optimizer = optim.Adam(
-        model.parameters(),
-        lr=hyperparameters["optimizer"]["lr"],
-        weight_decay=hyperparameters["optimizer"]["weight_decay"],
-    )
-    # optimizer = optim.LBFGS(
-    #     model.parameters(),
-    #     lr=hyperparameters["optimizer"]["lr"],
-    #     history_size=hyperparameters["optimizer"]["history_size"],
-    #     max_iter=hyperparameters["optimizer"]["max_iter"],
-    # )
-
-    loss = convection_loss
-
-    # Init curriculum learning components
-    scheduler = ConvectionCurriculumScheduler(
-        hyperparameters=hyperparameters,
-    )
-
-    learner = ConvectiveCurriculumLearning(
-        model=model,
-        optimizer=optimizer,
-        loss=loss,
-        scheduler=scheduler,
-        trainer=ConvectionEquationTrainer,
-        evaluator=ConvectionEquationEvaluator,
-        hyperparameters=hyperparameters,
-    )
-
-    learner.run()

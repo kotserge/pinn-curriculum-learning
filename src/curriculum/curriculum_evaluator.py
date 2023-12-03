@@ -22,6 +22,7 @@ class CurriculumEvaluator:
         curriculum_step: int,
         hyperparameters: dict,
         logging_path: Optional[str] = None,
+        logging_dict: dict = None,
         device: str = (
             torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         ),
@@ -47,6 +48,9 @@ class CurriculumEvaluator:
 
         # Other
         self.logging_path: Optional[str] = logging_path
+        self.logging_dict: dict = logging_dict
+
+        # Other
         self.device: str = device
         self.kwargs = kwargs
 
