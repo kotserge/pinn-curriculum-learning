@@ -1,4 +1,5 @@
 overview:
+  entity: "singing-kangaroo"
   project: "Curriculum Learning Convection Equation"
   group: "Adam Optimizer; Baseline"
   name: "Convection Equation Curriculum Learning"

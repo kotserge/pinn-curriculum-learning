@@ -130,6 +130,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             else None
         )
         run = wandb.init(
+            entity=self.hyperparameters["overview"]["entity"],
             project=self.hyperparameters["overview"]["project"],
             group=group,
             config=self.hyperparameters,
