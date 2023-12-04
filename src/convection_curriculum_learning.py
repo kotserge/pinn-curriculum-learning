@@ -364,7 +364,9 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
                 self.curriculum_step, epoch, epoch_loss_aggregation
             )
 
-            if eval_stopping_condition and self.stopping_condition():
+            if (
+                eval_stopping_condition and self.stopping_condition()
+            ) or self._batch_loss.item() > 1e10:
                 break
 
         # Step 6 - Early stopping logging

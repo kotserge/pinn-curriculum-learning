@@ -31,6 +31,7 @@ This repository contains example for PINN with curriculum learning for solving P
   - [x] More Epochs
   - [x] Keep track of early stopping epochs
   - [ ] Assertion tests (e.g. `assert x.shape == y.shape`)
+  - [ ] (??) instead of stopping less than exact lowest loss, use some tolerance (e.g. 1e-3) to adjust for noise in the loss
 - [ ] Documentation (e.g. `README.md`, `requirements.txt`, `setup.py`, `LICENSE`, etc.)
 
 ## Experiments
