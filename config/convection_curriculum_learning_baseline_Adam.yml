@@ -64,6 +64,6 @@ scheduler:
     start: 0
     step: 1
 training:
-  epochs: 200
+  epochs: 500
   stopping:
-    patience: 20
+    patience: 25

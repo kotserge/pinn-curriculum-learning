@@ -17,11 +17,10 @@ This repository contains example for PINN with curriculum learning for solving P
 - [x] Experimental setup (e.g. similar to the paper?)
 - [x] Implementation of curriculum learning
 - [x] Visualization of results (e.g. prediction and ground truth for $u(x, t)$, other metrics (wandb logging))
-  - [ ] Logging during training loop of curriculum learning is tricky with W&B. Find a clever way to do it.
+  - [x] Logging during training loop of curriculum learning is tricky with W&B. Find a clever way to do it.
 - [x] YAML config file for training
 - [x] Shuffle?
 - [x] Figure out closure for `torch.optim.LBFGS`
-  - [ ] Still buggy
 - [x] Seeding? (e.g. `torch.manual_seed(n)`)
 - [x] Baseline implementation (i.e. PINN without curriculum learning)
 - [x] Stopping criterion (e.g. early stopping, etc.)
@@ -37,6 +36,9 @@ This repository contains example for PINN with curriculum learning for solving P
 ## Experiments
 
 - [x] Add SGD optimizer
+- [x] First run:
+  - [x] Test with small epoch, if everything works
+  - [x] First initial large run with Optimizer LBFGS, SGD, Adam in Baseline and Curriculum Learning Mode 
 - [ ] Regularization term of the PDE loss; different $\lambda$'s (currently 1), as PDE loss is significantly lower than MSE loss
 
 ## Other
