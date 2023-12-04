@@ -39,7 +39,7 @@ seed: int = (
     else torch.seed()
 )
 
-print(f"*Using seed {seed}")
+print(f"* Using seed {seed}")
 torch.manual_seed(seed)
 hyperparameters["learning"]["seed"] = seed
 
