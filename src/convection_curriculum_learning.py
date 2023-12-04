@@ -70,6 +70,7 @@ class ConvectionEquationPDEDataset(Dataset):
         temporal: float,
         grid_points: int,
         convection: float,
+        seed: int,
         snr: float = 0,
     ):
         """Initializes the dataset for the convection equation PDE.
@@ -94,7 +95,7 @@ class ConvectionEquationPDEDataset(Dataset):
         self.X, self.Y = self.pde.solution()
 
         if snr > 0:
-            self.Y = data.augment_by_noise(self.Y, snr=snr)
+            self.Y = data.augment_by_noise(self.Y, snr=snr, seed=seed)
 
     def __len__(self):
         return len(self.X)
@@ -265,6 +266,7 @@ class ConvectionCurriculumScheduler(curriculum.CurriculumScheduler):
             temporal=self.hyperparameters["scheduler"]["pde"]["t"],
             grid_points=self.hyperparameters["scheduler"]["pde"]["n"],
             convection=convection,
+            seed=self.hyperparameters["learning"]["seed"],
             snr=self.hyperparameters["scheduler"]["pde"]["snr"],
         )
 

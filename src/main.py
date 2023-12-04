@@ -31,11 +31,17 @@ print(
 )
 
 print("* Configuring based on hyperparameters")
+
 # Seeding
-if "seed" in hyperparameters["learning"]:
-    print(f"Using seed {hyperparameters['learning']['seed']}")
-    torch.manual_seed(hyperparameters["learning"]["seed"])
-    np.random.seed(hyperparameters["learning"]["seed"])
+seed: int = (
+    hyperparameters["learning"]
+    if "seed" in hyperparameters["learning"]
+    else torch.seed()
+)
+
+print(f"*Using seed {seed}")
+torch.manual_seed(seed)
+hyperparameters["learning"]["seed"] = seed
 
 # Initialize model, optimizer, loss module and data loader
 model = model.PINNModel(

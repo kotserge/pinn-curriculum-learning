@@ -39,7 +39,10 @@ This repository contains example for PINN with curriculum learning for solving P
 - [x] First run:
   - [x] Test with small epoch, if everything works
   - [x] First initial large run with Optimizer LBFGS, SGD, Adam in Baseline and Curriculum Learning Mode 
-- [ ] Regularization term of the PDE loss; different $\lambda$'s (currently 1), as PDE loss is significantly lower than MSE loss
+- [ ] What are good experiments to run?
+- [ ] Maybe adjust loss module (sth different than MSE)
+  - [ ] Regularization term of the PDE loss; different $\lambda$'s (currently 1), as PDE loss is significantly lower than MSE loss
+  - [ ] why is the MSE loss always close to 1 at later stages of training? -> maybe guides the training towards uniform solution instead of the periodic one 
 
 ## Other
 
@@ -54,9 +57,3 @@ This repository contains example for PINN with curriculum learning for solving P
 
 - [ ] Report
   - [ ] Structure, content, etc. 
-
-- [ ] Email
-  - [ ] Screenshots of results
-  - [ ] Github link / invite
-  - [ ] Ask for next meeting
-  - [ ] Ask about LBFGS bad performance
