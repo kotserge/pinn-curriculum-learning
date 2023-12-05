@@ -143,7 +143,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         )
 
         # create directory for model
-        self.logging_path = f"data/run/{self.timestamp}-{self._id}/"
+        self.logging_path = f"data/run/{self._id}-{self.timestamp}/"
         self.model_path = f"{self.logging_path}/model/"
         self.image_path = f"{self.logging_path}/images/"
 
