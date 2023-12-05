@@ -129,13 +129,16 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             if "group" in self.hyperparameters["overview"]
             else None
         )
-        run = wandb.init(
+        self._id = (
+            self.hyperparameters["overview"]["name"] + "-" + wandb.util.generate_id()
+        )
+        _ = wandb.init(
             entity=self.hyperparameters["overview"]["entity"],
             project=self.hyperparameters["overview"]["project"],
             group=group,
+            name=self._id,
             config=self.hyperparameters,
         )
-        self._id = run.name
 
         # create directory for model
         self.logging_path = f"data/run/{self.timestamp}-{self._id}/"

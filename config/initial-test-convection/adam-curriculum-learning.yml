@@ -1,21 +1,19 @@
 overview:
   entity: "singing-kangaroo"
   project: "Curriculum Learning Convection Equation"
-  group: "SGD Optimizer; Baseline"
-  name: "Convection Equation Curriculum Learning"
+  group: "Adam Optimizer; Curriculum Learning"
+  name: "adam-curriculum-learning"
   description: "Curriculum Learning for Convection Equation"
   version: "0.0.1"
 learning:
-  curriculum: False
+  curriculum: True
 model:
   input_dim: 2
   hidden_dim: 50
 optimizer:
-  name: SGD
-  lr: 0.0005
+  name: Adam
+  lr: 0.01
   weight_decay: 0.001
-  momentum: 0.9
-  nesterov: True
 loss:
   name: ConvectionLoss
   custom: True
