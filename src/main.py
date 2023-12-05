@@ -27,7 +27,9 @@ with open(hyperparameters_path, "r") as file:
 
 print("* Hyperparameters loaded")
 print(
-    f"* Project: {hyperparameters['overview']['project']}; Group: {hyperparameters['overview']['group']}"
+    f"* Project: {hyperparameters['overview']['entity']}/{hyperparameters['overview']['project']};\n"
+    f"* Group: {hyperparameters['overview']['group']}\n"
+    f"* Experiment: {hyperparameters['overview']['experiment']}"
 )
 
 print("* Configuring based on hyperparameters")

@@ -2,7 +2,7 @@ overview:
   entity: "singing-kangaroo"
   project: "Curriculum Learning Convection Equation"
   group: "Adam Optimizer; Baseline"
-  name: "adam-baseline"
+  experiment: "adam-baseline"
   description: "Curriculum Learning for Convection Equation"
   version: "0.0.1"
 learning:

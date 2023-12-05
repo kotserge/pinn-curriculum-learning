@@ -130,7 +130,9 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             else None
         )
         self._id = (
-            self.hyperparameters["overview"]["name"] + "-" + wandb.util.generate_id()
+            self.hyperparameters["overview"]["experiment"]
+            + "-"
+            + wandb.util.generate_id()
         )
         _ = wandb.init(
             entity=self.hyperparameters["overview"]["entity"],

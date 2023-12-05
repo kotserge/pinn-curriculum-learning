@@ -2,7 +2,7 @@ overview:
   entity: "singing-kangaroo"
   project: "Curriculum Learning Convection Equation"
   group: "SGD Optimizer; Curriculum Learning"
-  name: "sgd-curriculum-learning"
+  experiment: "sgd-curriculum-learning"
   description: "Curriculum Learning for Convection Equation"
   version: "0.0.1"
 learning:

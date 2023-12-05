@@ -2,7 +2,7 @@ overview:
   entity: "singing-kangaroo"
   project: "Curriculum Learning Convection Equation"
   group: "LBFGS Optimizer; Baseline"
-  name: "lbfgs-baseline"
+  experiment: "lbfgs-baseline"
   description: "Curriculum Learning for Convection Equation"
   version: "0.0.1"
 learning:
