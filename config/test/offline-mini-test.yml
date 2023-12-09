@@ -1,0 +1,70 @@
+overview:
+  entity: "serge-kotchourko"
+  project: "Curriculum Learning Convection Equation"
+  group: "Test; Adam Optimizer; Curriculum Learning"
+  job_type: "Training"
+  experiment: "test-adam-curriculum-learning"
+  description: "Curriculum Learning for Convection Equation"
+  version: "0.0.1"
+  run_mode: "disabled"
+
+learning:
+  device: cuda
+  curriculum: True
+  # seed: 0
+
+model:
+  input_dim: 2
+  hidden_dim: 50
+
+optimizer:
+  name: Adam
+  lr: 0.01
+  weight_decay: 0.001
+
+loss:
+  name: ConvectionLoss
+  custom: True
+  regularization: 1
+
+scheduler:
+  data:
+    train:
+      batch_size: full
+      shuffle: False
+      pde:
+        convection: [1, 5, 10, 15, 20, 25, 30]
+        l: 6.283185307179586
+        n: 100
+        snr: 0
+        t: 1
+
+    validation:
+      batch_size: full
+      shuffle: False
+      pde:
+        convection: [1, 5, 10, 15, 20, 25, 30]
+        l: 6.283185307179586
+        n: 100
+        snr: 0
+        t: 1
+
+    test:
+      batch_size: full
+      shuffle: False
+      pde:
+        convection: [1, 5, 10, 15, 20, 25, 30]
+        l: 6.283185307179586
+        n: 100
+        snr: 0
+        t: 1
+
+  curriculum:
+    end: 6
+    start: 0
+    step: 1
+
+training:
+  epochs: 50
+  stopping:
+    patience: 10

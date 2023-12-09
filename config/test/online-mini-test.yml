@@ -1,16 +1,16 @@
 overview:
-  entity: "singing-kangaroo"
+  entity: "serge-kotchourko"
   project: "Curriculum Learning Convection Equation"
   group: "Test; Adam Optimizer; Curriculum Learning"
   job_type: "Training"
   experiment: "test-adam-curriculum-learning"
   description: "Curriculum Learning for Convection Equation"
   version: "0.0.1"
-  run_mode: "disabled"
+  run_mode: "online"
 
 learning:
-  curriculum: True
   device: cuda
+  curriculum: True
   # seed: 0
 
 model:
@@ -38,6 +38,7 @@ scheduler:
         n: 100
         snr: 0
         t: 1
+
     validation:
       batch_size: full
       shuffle: False
@@ -47,6 +48,7 @@ scheduler:
         n: 100
         snr: 0
         t: 1
+
     test:
       batch_size: full
       shuffle: False
@@ -56,12 +58,13 @@ scheduler:
         n: 100
         snr: 0
         t: 1
+
   curriculum:
     end: 6
     start: 0
     step: 1
 
 training:
-  epochs: 50
+  epochs: 10
   stopping:
     patience: 10

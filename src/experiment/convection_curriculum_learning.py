@@ -135,16 +135,12 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         self._id = wandb.util.generate_id()
         self._name = self.hyperparameters["overview"]["experiment"] + "-" + self._id
 
+        # Table logging
         self.logging_dict["Epoch Loss"] = wandb.Table(
             columns=["Curriculum Step", "Epoch", "Loss"]
         )
         self.logging_dict["Early Stopping Hit"] = wandb.Table(
-            columns=[
-                "Curriculum Step",
-                "Max Epoch",
-                "Epoch Stop",
-                "Relative Epochs",
-            ]
+            columns=["Curriculum Step", "Relative Epochs Ratio"]
         )
 
     def _resume(self, **kwargs) -> None:
@@ -163,11 +159,12 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         self.scheduler.curriculum_step = state_dict["Curriculum Step"]
         self.logging_dict = state_dict["Logging Dict"]
 
-    def curriculum_step_processing(self, **kwargs) -> None:
+    def curriculum_step_postprocessing(self, **kwargs) -> None:
         """Logging for each curriculum step.
 
         Saves the model after each curriculum step.
         """
+        # Save intermediate model
         torch.save(
             {
                 "ID": self._id,
@@ -181,11 +178,16 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             f"{self.model_path}/model_curriculum_step_{self.scheduler.curriculum_step}.tar",
         )
 
+        # Commit logged data during curriculum step
+        wandb.log(data={}, commit=True, step=self.scheduler.curriculum_step)
+
     def finalize(self, **kwargs) -> None:
         """Logging after the curriculum learning process has finished.
 
         Saves the final model and finishes the wandb run.
         """
+
+        # Save final model
         torch.save(
             {
                 "ID": self._id,
@@ -206,7 +208,6 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
                 "Early Stopping Hit": self.logging_dict["Early Stopping Hit"],
             },
             commit=True,
-            step=self.scheduler.curriculum_step,
         )
 
         wandb.finish()
@@ -383,8 +384,6 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
         # Step 6 - Early stopping logging
         self.logging_dict["Early Stopping Hit"].add_data(
             self.curriculum_step,
-            wandb.config["training"]["epochs"],
-            (epoch + 1),
             (epoch + 1) / wandb.config["training"]["epochs"],
         )
 
@@ -483,13 +482,13 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                 "Loss Overall": loss,
                 "Loss MSE": loss_mse,
                 "Loss PDE": loss_pde,
-                "Curriculum Step": self.curriculum_step,
                 "Convection Coefficient": wandb.config["scheduler"]["data"]["test"][
                     "pde"
                 ]["convection"][self.curriculum_step],
                 "PDE Prediction": fig,
             },
             step=self.curriculum_step,
+            commit=False,
         )
 
         # Step 8 - Close figure

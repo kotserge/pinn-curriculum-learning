@@ -80,7 +80,11 @@ class CurriculumLearning:
         """Function for initialization before the curriculum learning process starts."""
         pass
 
-    def curriculum_step_processing(self, **kwargs) -> None:
+    def curriculum_step_preprocessing(self, **kwargs) -> None:
+        """Function for preprocessing before each curriculum step."""
+        pass
+
+    def curriculum_step_postprocessing(self, **kwargs) -> None:
         """Function for processing after each curriculum step."""
         pass
 
@@ -115,6 +119,13 @@ class CurriculumLearning:
             vdata_loader = self.scheduler.get_validation_data_loader()
             edata_loader = self.scheduler.get_test_data_loader()
 
+            # Preprocessing
+            self.curriculum_step_preprocessing(
+                model=self.model,
+                logging_path=self.logging_path,
+                logging_dict=self.logging_dict,
+            )
+
             # Start training
             trainer = self.trainer(
                 model=self.model,
@@ -143,8 +154,8 @@ class CurriculumLearning:
             )
             evaluator.run(**self.kwargs)
 
-            # Logging
-            self.curriculum_step_processing(
+            # Postprocessing
+            self.curriculum_step_postprocessing(
                 model=self.model,
                 logging_path=self.logging_path,
                 logging_dict=self.logging_dict,
