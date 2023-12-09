@@ -84,11 +84,11 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         # create wandb run
         wandb.login()
 
-        dryrun = (
-            "disabled"
-            if "dryrun" in self.hyperparameters["overview"]
-            and self.hyperparameters["overview"]["dryrun"]
-            else "online"
+        run_mode = (
+            self.hyperparameters["overview"]
+            if "run_mode" in self.hyperparameters["overview"]
+            and self.hyperparameters["overview"]["run_mode"]
+            else "disabled"
         )
         group = (
             self.hyperparameters["overview"]["group"]
@@ -111,7 +111,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             group=group,
             job_type=job_type,
             name=self._id,
-            mode=dryrun,
+            mode=run_mode,
             config=self.hyperparameters,
         )
 

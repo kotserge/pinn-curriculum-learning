@@ -6,7 +6,7 @@ overview:
   experiment: "test-adam-curriculum-learning"
   description: "Curriculum Learning for Convection Equation"
   version: "0.0.1"
-  dryrun: True
+  run_mode: "disabled"
 learning:
   curriculum: True
 model:
