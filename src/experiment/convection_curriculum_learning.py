@@ -84,47 +84,57 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         # create wandb run
         wandb.login()
 
-        run_mode = (
-            self.hyperparameters["overview"]
-            if "run_mode" in self.hyperparameters["overview"]
-            and self.hyperparameters["overview"]["run_mode"]
-            else "disabled"
-        )
         group = (
             self.hyperparameters["overview"]["group"]
             if "group" in self.hyperparameters["overview"]
             else None
         )
+
         job_type = (
             self.hyperparameters["overview"]["job_type"]
             if "job_type" in self.hyperparameters["overview"]
             else None
         )
-        self._id = (
-            self.hyperparameters["overview"]["experiment"]
-            + "-"
-            + wandb.util.generate_id()
+
+        run_mode = (
+            self.hyperparameters["overview"]["run_mode"]
+            if "run_mode" in self.hyperparameters["overview"]
+            and self.hyperparameters["overview"]["run_mode"]
+            else "disabled"
         )
+
+        if self.kwargs["resume_path"]:
+            self._resume(group=group, job_type=job_type, run_mode=run_mode, **kwargs)
+        else:
+            self._setup(group=group, job_type=job_type, run_mode=run_mode, **kwargs)
+
         _ = wandb.init(
             entity=self.hyperparameters["overview"]["entity"],
             project=self.hyperparameters["overview"]["project"],
             group=group,
             job_type=job_type,
-            name=self._id,
+            name=self._name,
+            id=self._id,
             mode=run_mode,
             config=self.hyperparameters,
+            resume="must" if self.kwargs["resume_path"] else None,
         )
 
         # create directory for model
-        self.logging_path = f"data/run/{self.timestamp}-{self._id}/"
-        self.model_path = f"{self.logging_path}/model/"
-        self.image_path = f"{self.logging_path}/images/"
+        self.logging_path = f"data/run/{self.timestamp}-{self._name}"
+        self.model_path = f"{self.logging_path}/model"
+        self.image_path = f"{self.logging_path}/images"
 
         os.makedirs(self.logging_path, exist_ok=True)
         os.makedirs(self.model_path, exist_ok=True)
         os.makedirs(self.image_path, exist_ok=True)
 
-        # Create logging tables in logging dict
+    def _setup(self, **kwargs) -> None:
+        """Helper function for setup, if this a new curriculum learning process."""
+
+        self._id = wandb.util.generate_id()
+        self._name = self.hyperparameters["overview"]["experiment"] + "-" + self._id
+
         self.logging_dict["Epoch Loss"] = wandb.Table(
             columns=["Curriculum Step", "Epoch", "Loss"]
         )
@@ -137,14 +147,38 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             ]
         )
 
+    def _resume(self, **kwargs) -> None:
+        """Helper function for setup, if this is a resumed curriculum learning process."""
+        state_dict = torch.load(self.kwargs["resume_path"], map_location=self.device)
+
+        # Model and Optimizer state restoration
+        torch.manual_seed(state_dict["Seed"])
+        self.hyperparameters["learning"]["seed"] = state_dict["Seed"]
+        self.model.load_state_dict(state_dict["Model State Dict"])
+        self.optimizer.load_state_dict(state_dict["Optimizer State Dict"])
+
+        # Restore curriculum state
+        self._id = state_dict["ID"]
+        self._name = state_dict["Name"]
+        self.scheduler.curriculum_step = state_dict["Curriculum Step"]
+        self.logging_dict = state_dict["Logging Dict"]
+
     def curriculum_step_processing(self, **kwargs) -> None:
         """Logging for each curriculum step.
 
         Saves the model after each curriculum step.
         """
         torch.save(
-            self.model.state_dict(),
-            f"{self.model_path}/model_curriculum_step_{self.scheduler.curriculum_step}.pth",
+            {
+                "ID": self._id,
+                "Name": self._name,
+                "Seed": self.hyperparameters["learning"]["seed"],
+                "Model State Dict": self.model.state_dict(),
+                "Optimizer State Dict": self.optimizer.state_dict(),
+                "Curriculum Step": self.scheduler.curriculum_step,
+                "Logging Dict": self.logging_dict,
+            },
+            f"{self.model_path}/model_curriculum_step_{self.scheduler.curriculum_step}.tar",
         )
 
     def finalize(self, **kwargs) -> None:
@@ -153,8 +187,16 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         Saves the final model and finishes the wandb run.
         """
         torch.save(
-            self.model.state_dict(),
-            f"{self.model_path}/model_final.pth",
+            {
+                "ID": self._id,
+                "Name": self._name,
+                "Seed": self.hyperparameters["learning"]["seed"],
+                "Model State Dict": self.model.state_dict(),
+                "Optimizer State Dict": self.optimizer.state_dict(),
+                "Curriculum Step": self.scheduler.curriculum_step,
+                "Logging Dict": self.logging_dict,
+            },
+            f"{self.model_path}/model_final.tar",
         )
 
         # log final logging dict
@@ -304,7 +346,6 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
         """Runs a basic training process."""
 
         # Set model to training mode
-        self.model.to(self.device)
         self.model.train()
         self.optimizer.zero_grad()
 
@@ -372,7 +413,6 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
         """
 
         # Set model to evaluation mode
-        self.model.to(self.device)
         self.model.eval()
 
         # Initialize evaluation metrics

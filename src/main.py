@@ -10,8 +10,17 @@ import model
 import loss
 import experiment
 
+resume_path = None
 if len(sys.argv) > 1:
     hyperparameters_path = sys.argv[1]
+
+    if len(sys.argv) > 2:
+        resume_path = sys.argv[2]
+
+else:
+    raise ValueError(
+        "Please provide at least a path to the hyperparameters file as a command line argument."
+    )
 
 print("-" * 50, "\nStarting Curriculum Learning\n", "-" * 50)
 print(f"* Using hyperparameters file {hyperparameters_path}")
@@ -41,10 +50,14 @@ torch.manual_seed(seed)
 hyperparameters["learning"]["seed"] = seed
 
 # Initialize model, optimizer, loss module and data loader
-model = model.PINNModel(
-    input_dim=hyperparameters["model"]["input_dim"],
-    hidden_dim=hyperparameters["model"]["hidden_dim"],
-).to(torch.float64)
+model = (
+    model.PINNModel(
+        input_dim=hyperparameters["model"]["input_dim"],
+        hidden_dim=hyperparameters["model"]["hidden_dim"],
+    )
+    .to(torch.float64)
+    .to(torch.device(hyperparameters["learning"]["device"]))
+)
 
 if hyperparameters["optimizer"]["name"] == "Adam":
     optimizer = optim.Adam(
@@ -87,6 +100,8 @@ learner = experiment.ConvectiveCurriculumLearning(
     trainer=experiment.ConvectionEquationTrainer,
     evaluator=experiment.ConvectionEquationEvaluator,
     hyperparameters=hyperparameters,
+    resume_path=resume_path,
+    device=hyperparameters["learning"]["device"],
 )
 
 print("* Starting curriculum learning")
