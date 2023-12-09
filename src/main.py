@@ -8,12 +8,7 @@ from torch import optim
 
 import model
 import loss
-from convection_curriculum_learning import (
-    ConvectiveCurriculumLearning,
-    ConvectionCurriculumScheduler,
-    ConvectionEquationTrainer,
-    ConvectionEquationEvaluator,
-)
+import experiment
 
 if len(sys.argv) > 1:
     hyperparameters_path = sys.argv[1]
@@ -80,17 +75,17 @@ else:
 loss = loss.convection_mse_pde
 
 # Init curriculum learning components
-scheduler = ConvectionCurriculumScheduler(
+scheduler = experiment.ConvectionCurriculumScheduler(
     hyperparameters=hyperparameters,
 )
 
-learner = ConvectiveCurriculumLearning(
+learner = experiment.ConvectiveCurriculumLearning(
     model=model,
     optimizer=optimizer,
     loss=loss,
     scheduler=scheduler,
-    trainer=ConvectionEquationTrainer,
-    evaluator=ConvectionEquationEvaluator,
+    trainer=experiment.ConvectionEquationTrainer,
+    evaluator=experiment.ConvectionEquationEvaluator,
     hyperparameters=hyperparameters,
 )
 
