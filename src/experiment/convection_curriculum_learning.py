@@ -6,6 +6,9 @@ from matplotlib import pyplot as plt
 
 import wandb
 
+import plotly.express as px
+import plotly.graph_objects as go
+
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -205,12 +208,33 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         wandb.log(
             {
                 "Epoch Loss": self.logging_dict["Epoch Loss"],
+                "Epoch Loss Plot": self._visualize_epoch_loss(),
                 "Early Stopping Hit": self.logging_dict["Early Stopping Hit"],
             },
             commit=True,
         )
 
         wandb.finish()
+
+    def _visualize_epoch_loss(self) -> go.Figure:
+        """Visualizes the epoch loss.
+
+        Returns:
+            go.Figure: The figure
+        """
+        df = self.logging_dict["Epoch Loss"].get_dataframe()
+        return px.line_3d(
+            df,
+            x="Epoch",
+            y="Curriculum Step",
+            z="Loss",
+            line_group="Curriculum Step",
+            labels={
+                "Curriculum Step": "Curriculum Step",
+                "Epoch": "Epoch",
+                "Loss": "Loss",
+            },
+        )
 
 
 # --- Curriculum Scheduler ---
