@@ -95,6 +95,11 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             if "group" in self.hyperparameters["overview"]
             else None
         )
+        job_type = (
+            self.hyperparameters["overview"]["job_type"]
+            if "job_type" in self.hyperparameters["overview"]
+            else None
+        )
         self._id = (
             self.hyperparameters["overview"]["experiment"]
             + "-"
@@ -104,13 +109,14 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             entity=self.hyperparameters["overview"]["entity"],
             project=self.hyperparameters["overview"]["project"],
             group=group,
+            job_type=job_type,
             name=self._id,
             mode=dryrun,
             config=self.hyperparameters,
         )
 
         # create directory for model
-        self.logging_path = f"data/run/{self._id}-{self.timestamp}/"
+        self.logging_path = f"data/run/{self.timestamp}-{self._id}/"
         self.model_path = f"{self.logging_path}/model/"
         self.image_path = f"{self.logging_path}/images/"
 

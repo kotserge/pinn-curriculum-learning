@@ -2,6 +2,7 @@ overview:
   entity: "singing-kangaroo"
   project: "Curriculum Learning Convection Equation"
   group: "Test; Adam Optimizer; Curriculum Learning"
+  job: "Test Adam Optimizer with Curriculum Learning"
   experiment: "test-adam-curriculum-learning"
   description: "Curriculum Learning for Convection Equation"
   version: "0.0.1"
