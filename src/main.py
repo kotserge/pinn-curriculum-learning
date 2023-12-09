@@ -7,12 +7,12 @@ import torch
 from torch import optim
 
 import model
+import loss
 from convection_curriculum_learning import (
     ConvectiveCurriculumLearning,
     ConvectionCurriculumScheduler,
     ConvectionEquationTrainer,
     ConvectionEquationEvaluator,
-    convection_loss,
 )
 
 if len(sys.argv) > 1:
@@ -77,7 +77,7 @@ else:
         f"Optimizer {hyperparameters['optimizer']['name']} not implemented."
     )
 
-loss = convection_loss
+loss = loss.convection_mse_pde
 
 # Init curriculum learning components
 scheduler = ConvectionCurriculumScheduler(

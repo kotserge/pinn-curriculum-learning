@@ -8,51 +8,11 @@ import wandb
 
 import numpy as np
 import torch
-from torch import nn, Tensor
 from torch.utils.data import DataLoader, Dataset
 
 import curriculum
 import data
 import util
-
-# --- Loss ---
-# This is the loss function for the convection equation PDE.
-
-
-def convection_loss(
-    input: Tensor,
-    target: Tensor,
-    x: Tensor,
-    t: Tensor,
-    convection: float,
-    regularization: float,
-    model: nn.Module,
-) -> Tensor:
-    """Calculates the loss for the convection equation PDE.
-
-    Args:
-        input (Tensor): Prediction of the model
-        target (Tensor): Ground truth
-        x (Tensor): Spatial input (on which the prediction is calculated)
-        t (Tensor): Temporal input (on which the prediction is calculated)
-        convection (float): The convection coefficient of the PDE
-        model (nn.Module): The model to be used
-
-    Returns:
-        Tensor: The loss
-    """
-    loss_mse = torch.nn.MSELoss()(input, target)
-
-    loss_pde = data.ConvectionPDESolver.loss(
-        x=x,
-        t=t,
-        c=convection,
-        model=model,
-    )
-    loss_pde = torch.mean(torch.pow(loss_pde, 2))  # PDE loss
-
-    return torch.add(loss_mse, torch.mul(regularization, loss_pde)), loss_mse, loss_pde
-
 
 # --- PDE Dataset---
 
@@ -124,6 +84,12 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         # create wandb run
         wandb.login()
 
+        dryrun = (
+            "offline"
+            if "dryrun" in self.hyperparameters["overview"]
+            and self.hyperparameters["overview"]["dryrun"]
+            else "online"
+        )
         group = (
             self.hyperparameters["overview"]["group"]
             if "group" in self.hyperparameters["overview"]
@@ -139,6 +105,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             project=self.hyperparameters["overview"]["project"],
             group=group,
             name=self._id,
+            mode=dryrun,
             config=self.hyperparameters,
         )
 
