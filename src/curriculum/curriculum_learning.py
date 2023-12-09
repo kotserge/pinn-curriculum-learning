@@ -76,16 +76,16 @@ class CurriculumLearning:
             self.init_model_state_dict = self.model.state_dict()
             self.init_optimizer_state_dict = self.optimizer.state_dict()
 
-    def init_logging(self, **kwargs) -> None:
-        """Initial logging, before the curriculum learning process starts."""
+    def initialize(self, **kwargs) -> None:
+        """Function for initialization before the curriculum learning process starts."""
         pass
 
-    def curriculum_step_logging(self, **kwargs) -> None:
-        """Logging for each curriculum step."""
+    def curriculum_step_processing(self, **kwargs) -> None:
+        """Function for processing after each curriculum step."""
         pass
 
-    def end_logging(self, **kwargs) -> None:
-        """Logging after the curriculum learning process ends."""
+    def finalize(self, **kwargs) -> None:
+        """Function for finalization after the curriculum learning process ends."""
         pass
 
     def run(self) -> None:
@@ -100,7 +100,7 @@ class CurriculumLearning:
         If baseline training is used, the model is reset to the initial state after each curriculum step.
         """
 
-        self.init_logging(
+        self.initialize(
             model=self.model,
             logging_path=self.logging_path,
             logging_dict=self.logging_dict,
@@ -144,7 +144,7 @@ class CurriculumLearning:
             evaluator.run(**self.kwargs)
 
             # Logging
-            self.curriculum_step_logging(
+            self.curriculum_step_processing(
                 model=self.model,
                 logging_path=self.logging_path,
                 logging_dict=self.logging_dict,
@@ -155,7 +155,7 @@ class CurriculumLearning:
                 self.model.load_state_dict(self.init_model_state_dict)
                 self.optimizer.load_state_dict(self.init_optimizer_state_dict)
 
-        self.end_logging(
+        self.finalize(
             model=self.model,
             logging_path=self.logging_path,
             logging_dict=self.logging_dict,

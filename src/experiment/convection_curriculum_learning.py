@@ -74,7 +74,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         CurriculumLearning (CurriculumLearning): base class for curriculum learning
     """
 
-    def init_logging(self, **kwargs) -> None:
+    def initialize(self, **kwargs) -> None:
         """Initial logging, before the curriculum learning process starts.
 
         Initializes the wandb run and creates a directory for the model and other data.
@@ -85,7 +85,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         wandb.login()
 
         dryrun = (
-            "offline"
+            "disabled"
             if "dryrun" in self.hyperparameters["overview"]
             and self.hyperparameters["overview"]["dryrun"]
             else "online"
@@ -131,7 +131,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             ]
         )
 
-    def curriculum_step_logging(self, **kwargs) -> None:
+    def curriculum_step_processing(self, **kwargs) -> None:
         """Logging for each curriculum step.
 
         Saves the model after each curriculum step.
@@ -141,7 +141,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             f"{self.model_path}/model_curriculum_step_{self.scheduler.curriculum_step}.pth",
         )
 
-    def end_logging(self, **kwargs) -> None:
+    def finalize(self, **kwargs) -> None:
         """Logging after the curriculum learning process has finished.
 
         Saves the final model and finishes the wandb run.
@@ -195,9 +195,9 @@ class ConvectionCurriculumScheduler(curriculum.CurriculumScheduler):
         return DataLoader(
             dataset=dataset,
             batch_size=len(dataset)
-            if self.hyperparameters["scheduler"]["data"]["batch_size"] == "full"
-            else self.hyperparameters["scheduler"]["data"]["batch_size"],
-            shuffle=self.hyperparameters["scheduler"]["data"]["shuffle"],
+            if wandb.config["scheduler"]["data"]["batch_size"] == "full"
+            else wandb.config["scheduler"]["data"]["batch_size"],
+            shuffle=wandb.config["scheduler"]["data"]["shuffle"],
             **kwargs,
         )
 
@@ -219,8 +219,8 @@ class ConvectionCurriculumScheduler(curriculum.CurriculumScheduler):
         return DataLoader(
             dataset=dataset,
             batch_size=len(dataset)
-            if self.hyperparameters["scheduler"]["data"]["batch_size"] == "full"
-            else self.hyperparameters["scheduler"]["data"]["batch_size"],
+            if wandb.config["scheduler"]["data"]["batch_size"] == "full"
+            else wandb.config["scheduler"]["data"]["batch_size"],
             **kwargs,
         )
 
@@ -230,17 +230,17 @@ class ConvectionCurriculumScheduler(curriculum.CurriculumScheduler):
         Returns:
             Dataset: Parameterized dataset
         """
-        convection = self.hyperparameters["scheduler"]["pde"]["convection"]
+        convection = wandb.config["scheduler"]["pde"]["convection"]
         if isinstance(convection, list):
             convection = convection[self.curriculum_step]
 
         return ConvectionEquationPDEDataset(
-            spatial=self.hyperparameters["scheduler"]["pde"]["l"],
-            temporal=self.hyperparameters["scheduler"]["pde"]["t"],
-            grid_points=self.hyperparameters["scheduler"]["pde"]["n"],
+            spatial=wandb.config["scheduler"]["pde"]["l"],
+            temporal=wandb.config["scheduler"]["pde"]["t"],
+            grid_points=wandb.config["scheduler"]["pde"]["n"],
             convection=convection,
-            seed=self.hyperparameters["learning"]["seed"],
-            snr=self.hyperparameters["scheduler"]["pde"]["snr"],
+            seed=wandb.config["learning"]["seed"],
+            snr=wandb.config["scheduler"]["pde"]["snr"],
         )
 
 
@@ -272,7 +272,7 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
             self.counter = -1
         self.counter += 1
 
-        return self.counter > self.hyperparameters["training"]["stopping"]["patience"]
+        return self.counter > wandb.config["training"]["stopping"]["patience"]
 
     def closure(self) -> torch.Tensor:
         """Closure for the optimizer using the MSE and PDE loss.
@@ -287,10 +287,8 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
             self.closure_y,
             self.closure_x,
             self.closure_t,
-            self.hyperparameters["scheduler"]["pde"]["convection"][
-                self.curriculum_step
-            ],
-            self.hyperparameters["loss"]["regularization"],
+            wandb.config["scheduler"]["pde"]["convection"][self.curriculum_step],
+            wandb.config["loss"]["regularization"],
             self.model,
         )
         loss.backward()
@@ -305,12 +303,10 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
         self.optimizer.zero_grad()
 
         # Check, if stopping condition should be evaluated
-        eval_stopping_condition = "stopping" in self.hyperparameters["training"]
+        eval_stopping_condition = "stopping" in wandb.config["training"]
 
         # Epoch loop
-        for epoch in tqdm(
-            range(self.hyperparameters["training"]["epochs"]), miniters=0
-        ):
+        for epoch in tqdm(range(wandb.config["training"]["epochs"]), miniters=0):
             # Epoch loss aggregator
             epoch_loss_aggregation = 0.0
 
@@ -344,9 +340,9 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
         # Step 6 - Early stopping logging
         self.logging_dict["Early Stopping Hit"].add_data(
             self.curriculum_step,
-            self.hyperparameters["training"]["epochs"],
+            wandb.config["training"]["epochs"],
             (epoch + 1),
-            (epoch + 1) / self.hyperparameters["training"]["epochs"],
+            (epoch + 1) / wandb.config["training"]["epochs"],
         )
 
 
@@ -401,10 +397,8 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                 data_labels,
                 x,
                 t,
-                self.hyperparameters["scheduler"]["pde"]["convection"][
-                    self.curriculum_step
-                ],
-                self.hyperparameters["loss"]["regularization"],
+                wandb.config["scheduler"]["pde"]["convection"][self.curriculum_step],
+                wandb.config["loss"]["regularization"],
                 self.model,
             )
 
@@ -427,12 +421,12 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                     "prediction": "Neural Network PDE Solution",
                 },
                 "data": {
-                    "grid": self.hyperparameters["scheduler"]["pde"]["n"],
+                    "grid": wandb.config["scheduler"]["pde"]["n"],
                     "extent": [
                         0,
-                        self.hyperparameters["scheduler"]["pde"]["t"],
+                        wandb.config["scheduler"]["pde"]["t"],
                         0,
-                        self.hyperparameters["scheduler"]["pde"]["l"],
+                        wandb.config["scheduler"]["pde"]["l"],
                     ],
                 },
                 "savefig_path": f"{self.logging_path}/images/results_convection_curriculum_{self.curriculum_step}.png",
@@ -446,7 +440,7 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                 "Loss MSE": loss_mse,
                 "Loss PDE": loss_pde,
                 "Curriculum Step": self.curriculum_step,
-                "Convection Coefficient": self.hyperparameters["scheduler"]["pde"][
+                "Convection Coefficient": wandb.config["scheduler"]["pde"][
                     "convection"
                 ][self.curriculum_step],
                 "PDE Prediction": fig,
