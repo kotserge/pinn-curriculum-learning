@@ -239,23 +239,15 @@ class ConvectionCurriculumScheduler(curriculum.CurriculumScheduler):
         Returns:
             DataLoader: Parameterized dataset
         """
-        dataset = self._get_parameterized_dataset(**kwargs)
-        return DataLoader(
-            dataset=dataset,
-            batch_size=len(dataset)
-            if wandb.config["scheduler"]["data"]["batch_size"] == "full"
-            else wandb.config["scheduler"]["data"]["batch_size"],
-            shuffle=wandb.config["scheduler"]["data"]["shuffle"],
-            **kwargs,
-        )
+        return self._get_parameterized_dataloader("train", **kwargs)
 
     def get_validation_data_loader(self, **kwargs) -> DataLoader:
-        """The validation data loader returns the same data as the train data loader
+        """Returns the parameterized validation dataset for the PDE of the current curriculum step.
 
         Returns:
             DataLoader: Parameterized dataset
         """
-        return self.get_train_data_loader(**kwargs)
+        return self._get_parameterized_dataloader("validation", **kwargs)
 
     def get_test_data_loader(self, **kwargs) -> DataLoader:
         """Returns the parameterized test dataset for the PDE of the current curriculum step.
@@ -263,32 +255,34 @@ class ConvectionCurriculumScheduler(curriculum.CurriculumScheduler):
         Returns:
             DataLoader: Parameterized dataset
         """
-        dataset = self._get_parameterized_dataset(**kwargs)
-        return DataLoader(
-            dataset=dataset,
-            batch_size=len(dataset)
-            if wandb.config["scheduler"]["data"]["batch_size"] == "full"
-            else wandb.config["scheduler"]["data"]["batch_size"],
-            **kwargs,
-        )
+        return self._get_parameterized_dataloader("test", **kwargs)
 
-    def _get_parameterized_dataset(self, **kwargs) -> Dataset:
+    def _get_parameterized_dataloader(self, mode: str, **kwargs) -> DataLoader:
         """Returns a parameterized dataset for the current curriculum step.
 
         Returns:
             Dataset: Parameterized dataset
         """
-        convection = wandb.config["scheduler"]["pde"]["convection"]
+        convection = wandb.config["scheduler"]["data"][mode]["pde"]["convection"]
         if isinstance(convection, list):
             convection = convection[self.curriculum_step]
 
-        return ConvectionEquationPDEDataset(
-            spatial=wandb.config["scheduler"]["pde"]["l"],
-            temporal=wandb.config["scheduler"]["pde"]["t"],
-            grid_points=wandb.config["scheduler"]["pde"]["n"],
+        dataset = ConvectionEquationPDEDataset(
+            spatial=wandb.config["scheduler"]["data"][mode]["pde"]["l"],
+            temporal=wandb.config["scheduler"]["data"][mode]["pde"]["t"],
+            grid_points=wandb.config["scheduler"]["data"][mode]["pde"]["n"],
             convection=convection,
             seed=wandb.config["learning"]["seed"],
-            snr=wandb.config["scheduler"]["pde"]["snr"],
+            snr=wandb.config["scheduler"]["data"][mode]["pde"]["snr"],
+        )
+
+        return DataLoader(
+            dataset=dataset,
+            batch_size=len(dataset)
+            if wandb.config["scheduler"]["data"][mode]["batch_size"] == "full"
+            else wandb.config["scheduler"]["data"][mode]["batch_size"],
+            shuffle=wandb.config["scheduler"]["data"][mode]["shuffle"],
+            **kwargs,
         )
 
 
@@ -335,7 +329,9 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
             self.closure_y,
             self.closure_x,
             self.closure_t,
-            wandb.config["scheduler"]["pde"]["convection"][self.curriculum_step],
+            wandb.config["scheduler"]["data"]["train"]["pde"]["convection"][
+                self.curriculum_step
+            ],
             wandb.config["loss"]["regularization"],
             self.model,
         )
@@ -443,7 +439,9 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                 data_labels,
                 x,
                 t,
-                wandb.config["scheduler"]["pde"]["convection"][self.curriculum_step],
+                wandb.config["scheduler"]["data"]["test"]["pde"]["convection"][
+                    self.curriculum_step
+                ],
                 wandb.config["loss"]["regularization"],
                 self.model,
             )
@@ -467,12 +465,12 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                     "prediction": "Neural Network PDE Solution",
                 },
                 "data": {
-                    "grid": wandb.config["scheduler"]["pde"]["n"],
+                    "grid": wandb.config["scheduler"]["data"]["test"]["pde"]["n"],
                     "extent": [
                         0,
-                        wandb.config["scheduler"]["pde"]["t"],
+                        wandb.config["scheduler"]["data"]["test"]["pde"]["t"],
                         0,
-                        wandb.config["scheduler"]["pde"]["l"],
+                        wandb.config["scheduler"]["data"]["test"]["pde"]["l"],
                     ],
                 },
                 "savefig_path": f"{self.logging_path}/images/results_convection_curriculum_{self.curriculum_step}.png",
@@ -486,9 +484,9 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                 "Loss MSE": loss_mse,
                 "Loss PDE": loss_pde,
                 "Curriculum Step": self.curriculum_step,
-                "Convection Coefficient": wandb.config["scheduler"]["pde"][
-                    "convection"
-                ][self.curriculum_step],
+                "Convection Coefficient": wandb.config["scheduler"]["data"]["test"][
+                    "pde"
+                ]["convection"][self.curriculum_step],
                 "PDE Prediction": fig,
             },
             step=self.curriculum_step,
