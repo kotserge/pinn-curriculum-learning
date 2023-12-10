@@ -9,30 +9,24 @@ class CurriculumScheduler:
     get_train_data_loader, get_validation_data_loader and get_test_data_loader methods.
     """
 
-    def __init__(self, hyperparameters: dict, **kwargs) -> None:
+    def __init__(self, config: dict, **kwargs) -> None:
         """Initializes the curriculum scheduler.
 
         Args:
-            hyperparameters (dict): Hyperparameters of the curriculum learning process. The curriculum parameters are expected to be in the scheduler dictionary.
+            config (dict): Configuration dictionary containing the Configuration for the curriculum scheduler.
         """
         super().__init__()
-        assert (
-            "start" in hyperparameters["scheduler"]["curriculum"]
-        ), "start parameter is required"
-        assert (
-            "end" in hyperparameters["scheduler"]["curriculum"]
-        ), "end parameter is required"
-        assert (
-            "step" in hyperparameters["scheduler"]["curriculum"]
-        ), "step parameter is required"
+        assert "start" in config, "start parameter is required"
+        assert "end" in config, "end parameter is required"
+        assert "step" in config, "step parameter is required"
 
         # Curriculum parameters
-        self.start: int = hyperparameters["scheduler"]["curriculum"]["start"]
-        self.step: int = hyperparameters["scheduler"]["curriculum"]["step"]
-        self.end: int = hyperparameters["scheduler"]["curriculum"]["end"]
+        self.start: int = config["start"]
+        self.step: int = config["step"]
+        self.end: int = config["end"]
         self.curriculum_step = self.start - self.step
 
-        self.hyperparameters: dict = hyperparameters
+        self.config: dict = config
 
         # Other parameters
         self.kwargs = kwargs

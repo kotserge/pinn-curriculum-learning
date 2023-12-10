@@ -1,1 +1,1 @@
-from .pinn import PINNModel
+from .pinn import ConvectionPINNModel

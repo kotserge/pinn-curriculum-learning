@@ -1,7 +1,7 @@
 import sys
 import yaml
 
-import numpy as np
+import wandb
 
 import torch
 from torch import optim
@@ -50,59 +50,43 @@ torch.manual_seed(seed)
 hyperparameters["learning"]["seed"] = seed
 
 # Initialize model, optimizer, loss module and data loader
-model = (
-    model.PINNModel(
-        input_dim=hyperparameters["model"]["input_dim"],
-        hidden_dim=hyperparameters["model"]["hidden_dim"],
-    )
-    .to(torch.float64)
-    .to(torch.device(hyperparameters["learning"]["device"]))
-)
 
-if hyperparameters["optimizer"]["name"] == "Adam":
-    optimizer = optim.Adam(
-        model.parameters(),
-        lr=hyperparameters["optimizer"]["lr"],
-        weight_decay=hyperparameters["optimizer"]["weight_decay"],
-    )
-elif hyperparameters["optimizer"]["name"] == "LBFGS":
-    optimizer = optim.LBFGS(
-        model.parameters(),
-        lr=hyperparameters["optimizer"]["lr"],
-        history_size=hyperparameters["optimizer"]["history_size"],
-        max_iter=hyperparameters["optimizer"]["max_iter"],
-    )
-elif hyperparameters["optimizer"]["name"] == "SGD":
-    optimizer = optim.SGD(
-        model.parameters(),
-        lr=hyperparameters["optimizer"]["lr"],
-        momentum=hyperparameters["optimizer"]["momentum"],
-        weight_decay=hyperparameters["optimizer"]["weight_decay"],
-        nesterov=hyperparameters["optimizer"]["nesterov"],
-    )
-else:
-    raise NotImplementedError(
-        f"Optimizer {hyperparameters['optimizer']['name']} not implemented."
-    )
+# Use dictionary to map model and optimizer names to classes
+implemented_models = {
+    "ConvectionPINNModel": model.ConvectionPINNModel,
+}
+implemented_optimizers = {
+    "Adam": optim.Adam,
+    "LBFGS": optim.LBFGS,
+    "SGD": optim.SGD,
+}
 
 loss = loss.convection_mse_pde
 
 # Init curriculum learning components
-scheduler = experiment.ConvectionCurriculumScheduler(
-    hyperparameters=hyperparameters,
-)
-
 learner = experiment.ConvectiveCurriculumLearning(
-    model=model,
-    optimizer=optimizer,
+    modelzz=implemented_models[hyperparameters["model"]["name"]],
+    optimizerzz=implemented_optimizers[hyperparameters["optimizer"]["name"]],
     loss=loss,
-    scheduler=scheduler,
-    trainer=experiment.ConvectionEquationTrainer,
-    evaluator=experiment.ConvectionEquationEvaluator,
+    schedulerzz=experiment.ConvectionCurriculumScheduler,
+    trainerzz=experiment.ConvectionEquationTrainer,
+    evaluatorzz=experiment.ConvectionEquationEvaluator,
     hyperparameters=hyperparameters,
     resume_path=resume_path,
     device=hyperparameters["learning"]["device"],
 )
+
+if "sweep" in hyperparameters:
+    print("* Starting sweep")
+    print("-" * 50)
+
+    sweep_id = wandb.sweep(
+        entity=hyperparameters["overview"]["entity"],
+        project=hyperparameters["overview"]["project"],
+        sweep=hyperparameters["sweep"],
+    )
+    wandb.agent(sweep_id, function=learner.run)
+
 
 print("* Starting curriculum learning")
 print("-" * 50)

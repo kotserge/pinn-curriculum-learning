@@ -1,12 +1,12 @@
 overview:
-  entity: "serge-kotchourko"
-  project: "Curriculum Learning Resume Test"
-  group: "Test; Adam Optimizer; Curriculum Learning"
-  job_type: "Training"
-  experiment: "resume-test-adam-curriculum-learning"
-  description: "Curriculum Learning for Convection Equation"
-  version: "0.0.1"
-  run_mode: "online"
+  entity: serge-kotchourko
+  project: Curriculum Learning Resume Test
+  group: Test; Adam Optimizer; Curriculum Learning
+  job_type: Training
+  experiment: resume-test-adam-curriculum-learning
+  description: Curriculum Learning for Convection Equation
+  version: v0.0.1
+  run_mode: online
 
 learning:
   device: cuda
@@ -14,6 +14,7 @@ learning:
   # seed: 0
 
 model:
+  name: ConvectionPINNModel
   input_dim: 2
   hidden_dim: 50
 
@@ -28,6 +29,10 @@ loss:
   regularization: 1
 
 scheduler:
+  end: 6
+  start: 0
+  step: 1
+
   data:
     train:
       batch_size: full
@@ -58,11 +63,6 @@ scheduler:
         n: 100
         snr: 0
         t: 1
-
-  curriculum:
-    end: 6
-    start: 0
-    step: 1
 
 training:
   epochs: 50

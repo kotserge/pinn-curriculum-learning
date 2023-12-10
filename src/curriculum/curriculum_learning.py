@@ -22,12 +22,12 @@ class CurriculumLearning:
 
     def __init__(
         self,
-        model: nn.Module,
-        optimizer: Optimizer,
+        modelzz: Type[nn.Module],
+        optimizerzz: Type[Optimizer],
         loss: _Loss,
-        scheduler: CurriculumScheduler,
-        trainer: Type[CurriculumTrainer],
-        evaluator: Type[CurriculumEvaluator],
+        schedulerzz: Type[CurriculumScheduler],
+        trainerzz: Type[CurriculumTrainer],
+        evaluatorzz: Type[CurriculumEvaluator],
         hyperparameters: dict,
         logging_path: Optional[str] = None,
         logging_dict: dict = None,
@@ -39,8 +39,8 @@ class CurriculumLearning:
         """Initializes the curriculum learning process.
 
         Args:
-            model (nn.Module): The model to be trained.
-            optimizer (Optimizer): The optimizer to be used.
+            modelzz (nn.Module): The model class to be used. This class needs to be initialized with the hyperparameters during the curriculum learning process.
+            optimizerzz (Optimizer): The optimizer class to be used. This class needs to be initialized with the model parameters during the curriculum learning process.
             loss (_Loss): The loss module (or function) to be used.
             scheduler (CurriculumScheduler): The scheduler to be used.
             trainer (Type[CurriculumTrainer]): The trainer class to be used.
@@ -50,14 +50,18 @@ class CurriculumLearning:
             logging_path (str, optional): Path to the logging directory. Defaults to None.
         """
         # Model, optimizer, loss module and data loader
-        self.model: nn.Module = model
-        self.optimizer: Optimizer = optimizer
+        self.modelzz: nn.Module = modelzz
+        self.model: nn.Module = None
+
+        self.optimizerzz: Optimizer = optimizerzz
+        self.optimizer: Optimizer = None
+
         self.loss: _Loss = loss
 
         # Curriculum learning components
-        self.scheduler: CurriculumScheduler = scheduler
-        self.trainer: Type[CurriculumTrainer] = trainer
-        self.evaluator: Type[CurriculumEvaluator] = evaluator
+        self.schedulerzz: Type[CurriculumScheduler] = schedulerzz
+        self.trainerzz: Type[CurriculumTrainer] = trainerzz
+        self.evaluatorzz: Type[CurriculumEvaluator] = evaluatorzz
 
         # Hyperparameters
         self.hyperparameters: dict = hyperparameters
@@ -77,16 +81,56 @@ class CurriculumLearning:
             self.init_optimizer_state_dict = self.optimizer.state_dict()
 
     def initialize(self, **kwargs) -> None:
-        """Function for initialization before the curriculum learning process starts."""
-        pass
+        """Function for initialization before the curriculum learning process starts.
+
+        By default the scheduler is  initialized here, and if overriden, the user should
+            call super().initialize() or initialize the scheduler manually.
+        """
+
+        self.scheduler = self.schedulerzz(
+            config=self.hyperparameters,
+            **self.kwargs,
+        )
 
     def curriculum_step_preprocessing(self, **kwargs) -> None:
-        """Function for preprocessing before each curriculum step."""
-        pass
+        """Function for preprocessing before each curriculum step.
+        By default the model and optimizer are initialized here, and if overriden, the user should
+            call super().curriculum_step_preprocessing() or initialize the model and optimizer manually.
+        """
+        self.trainer = self.trainerzz(
+            model=self.model,
+            optimizer=self.optimizer,
+            loss=self.loss,
+            train_data_loader=self.latest_tdata_loader,
+            validation_data_loader=self.latest_vdata_loader,
+            curriculum_step=self.scheduler.curriculum_step,
+            config=self.hyperparameters,
+            device=self.device,
+            logging_path=self.logging_path,
+            logging_dict=self.logging_dict,
+        )
+
+        self.evaluator = self.evaluatorzz(
+            model=self.model,
+            loss=self.loss,
+            data_loader=self.latest_edata_loader,
+            curriculum_step=self.scheduler.curriculum_step,
+            config=self.hyperparameters,
+            device=self.device,
+            logging_path=self.logging_path,
+            logging_dict=self.logging_dict,
+        )
 
     def curriculum_step_postprocessing(self, **kwargs) -> None:
-        """Function for processing after each curriculum step."""
-        pass
+        """Function for processing after each curriculum step.
+
+        By default the model is reset to the initial state if baseline training is used, and if overriden, the user should
+            call super().curriculum_step_postprocessing() or reset the model manually.
+        """
+        # Reset model to initial state if baseline training is used
+        if self.baseline:
+            self.model.load_state_dict(self.init_model_state_dict)
+            self.optimizer.load_state_dict(self.init_optimizer_state_dict)
 
     def finalize(self, **kwargs) -> None:
         """Function for finalization after the curriculum learning process ends."""
@@ -115,9 +159,9 @@ class CurriculumLearning:
             self.scheduler.next()
 
             # Get data loader and parameters for current curriculum step
-            tdata_loader = self.scheduler.get_train_data_loader()
-            vdata_loader = self.scheduler.get_validation_data_loader()
-            edata_loader = self.scheduler.get_test_data_loader()
+            self.latest_tdata_loader = self.scheduler.get_train_data_loader()
+            self.latest_vdata_loader = self.scheduler.get_validation_data_loader()
+            self.latest_edata_loader = self.scheduler.get_test_data_loader()
 
             # Preprocessing
             self.curriculum_step_preprocessing(
@@ -127,32 +171,10 @@ class CurriculumLearning:
             )
 
             # Start training
-            trainer = self.trainer(
-                model=self.model,
-                optimizer=self.optimizer,
-                loss=self.loss,
-                train_data_loader=tdata_loader,
-                validation_data_loader=vdata_loader,
-                curriculum_step=self.scheduler.curriculum_step,
-                hyperparameters=self.hyperparameters,
-                device=self.device,
-                logging_path=self.logging_path,
-                logging_dict=self.logging_dict,
-            )
-            trainer.run(**self.kwargs)
+            self.trainer.run(**self.kwargs)
 
             # Evaluate model
-            evaluator = self.evaluator(
-                model=self.model,
-                loss=self.loss,
-                data_loader=edata_loader,
-                curriculum_step=self.scheduler.curriculum_step,
-                hyperparameters=self.hyperparameters,
-                device=self.device,
-                logging_path=self.logging_path,
-                logging_dict=self.logging_dict,
-            )
-            evaluator.run(**self.kwargs)
+            self.evaluator.run(**self.kwargs)
 
             # Postprocessing
             self.curriculum_step_postprocessing(
@@ -160,11 +182,6 @@ class CurriculumLearning:
                 logging_path=self.logging_path,
                 logging_dict=self.logging_dict,
             )
-
-            # Reset model to initial state if baseline training is used
-            if self.baseline:
-                self.model.load_state_dict(self.init_model_state_dict)
-                self.optimizer.load_state_dict(self.init_optimizer_state_dict)
 
         self.finalize(
             model=self.model,

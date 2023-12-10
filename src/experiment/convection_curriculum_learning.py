@@ -87,6 +87,44 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         # create wandb run
         wandb.login()
 
+        entity, project, group, job_type, run_mode = self._get_wandb_init_parameters(
+            **kwargs
+        )
+
+        if self.kwargs["resume_path"]:
+            self._resume(group=group, job_type=job_type, run_mode=run_mode, **kwargs)
+        else:
+            self._setup(group=group, job_type=job_type, run_mode=run_mode, **kwargs)
+
+        _ = wandb.init(
+            entity=entity,
+            project=project,
+            group=group,
+            job_type=job_type,
+            name=self._name,
+            id=self._id,
+            mode=run_mode,
+            config=self.hyperparameters,
+            resume="must" if self.kwargs["resume_path"] else None,
+        )
+
+        # Finalize setup, if this is a resumed curriculum learning process skip this
+        if not self.kwargs["resume_path"]:
+            self._finalize_setup()
+
+    def _get_wandb_init_parameters(self, **kwargs) -> dict:
+        """Returns the correct parameters for the wandb init function.
+
+        Returns:
+            tuple: Parameters for wandb init function (entity, project, group, job_type, run_mode)
+        """
+        assert "overview" in self.hyperparameters, "No overview in hyperparameters"
+        assert "entity" in self.hyperparameters["overview"], "No entity in overview"
+        assert "project" in self.hyperparameters["overview"], "No project in overview"
+
+        entity = self.hyperparameters["overview"]["entity"]
+        project = self.hyperparameters["overview"]["project"]
+
         group = (
             self.hyperparameters["overview"]["group"]
             if "group" in self.hyperparameters["overview"]
@@ -106,35 +144,11 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             else "disabled"
         )
 
-        if self.kwargs["resume_path"]:
-            self._resume(group=group, job_type=job_type, run_mode=run_mode, **kwargs)
-        else:
-            self._setup(group=group, job_type=job_type, run_mode=run_mode, **kwargs)
-
-        _ = wandb.init(
-            entity=self.hyperparameters["overview"]["entity"],
-            project=self.hyperparameters["overview"]["project"],
-            group=group,
-            job_type=job_type,
-            name=self._name,
-            id=self._id,
-            mode=run_mode,
-            config=self.hyperparameters,
-            resume="must" if self.kwargs["resume_path"] else None,
-        )
-
-        # create directory for model
-        self.logging_path = f"data/run/{self.timestamp}-{self._name}"
-        self.model_path = f"{self.logging_path}/model"
-        self.image_path = f"{self.logging_path}/images"
-
-        os.makedirs(self.logging_path, exist_ok=True)
-        os.makedirs(self.model_path, exist_ok=True)
-        os.makedirs(self.image_path, exist_ok=True)
+        return entity, project, group, job_type, run_mode
 
     def _setup(self, **kwargs) -> None:
         """Helper function for setup, if this a new curriculum learning process."""
-
+        # Model and Optimizer initialization
         self._id = wandb.util.generate_id()
         self._name = self.hyperparameters["overview"]["experiment"] + "-" + self._id
 
@@ -162,17 +176,41 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         self.scheduler.curriculum_step = state_dict["Curriculum Step"]
         self.logging_dict = state_dict["Logging Dict"]
 
+    def _finalize_setup(self, **kwargs) -> None:
+        """Helper function for setup, if this is a new curriculum learning process."""
+        # create directory for model
+        self.logging_path = f"data/run/{self.timestamp}-{self._name}"
+        self.model_path = f"{self.logging_path}/model"
+        self.image_path = f"{self.logging_path}/images"
+
+        os.makedirs(self.logging_path, exist_ok=True)
+        os.makedirs(self.model_path, exist_ok=True)
+        os.makedirs(self.image_path, exist_ok=True)
+
+        # Initialize scheduler, model and optimizer
+        self.scheduler = self.schedulerzz(wandb.config)
+
+        self.model = util.initializer.initialize_model(wandb.config["model"])
+        self.model.to(torch.float64).to(self.device)
+
+        self.optimizer = util.initializer.initialize_optimizer(
+            wandb.config["optimizer"], self.model
+        )
+
     def curriculum_step_postprocessing(self, **kwargs) -> None:
         """Logging for each curriculum step.
 
         Saves the model after each curriculum step.
         """
+        # Call super class method, for baseline training resetting the model to initial state
+        super().curriculum_step_postprocessing()
+
         # Save intermediate model
         torch.save(
             {
                 "ID": self._id,
                 "Name": self._name,
-                "Seed": self.hyperparameters["learning"]["seed"],
+                "Seed": wandb.config["learning"]["seed"],
                 "Model State Dict": self.model.state_dict(),
                 "Optimizer State Dict": self.optimizer.state_dict(),
                 "Curriculum Step": self.scheduler.curriculum_step,
@@ -195,7 +233,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             {
                 "ID": self._id,
                 "Name": self._name,
-                "Seed": self.hyperparameters["learning"]["seed"],
+                "Seed": wandb.config["learning"]["seed"],
                 "Model State Dict": self.model.state_dict(),
                 "Optimizer State Dict": self.optimizer.state_dict(),
                 "Curriculum Step": self.scheduler.curriculum_step,
@@ -249,14 +287,14 @@ class ConvectionCurriculumScheduler(curriculum.CurriculumScheduler):
 
     def __init__(
         self,
-        hyperparameters: dict,
+        config: dict,
     ) -> None:
         """Initializes the scheduler for curriculum learning for the convection equation PDE.
 
         Args:
-            hyperparameters (dict): Hyperparameters of the curriculum learning process.
+            config (dict): Configuration of the curriculum learning process.
         """
-        super().__init__(hyperparameters)
+        super().__init__(config["scheduler"])
 
     def get_train_data_loader(self, **kwargs) -> DataLoader:
         """Returns the parameterized train dataset for the PDE of the current curriculum step.

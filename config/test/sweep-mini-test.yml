@@ -6,12 +6,25 @@ overview:
   experiment: test-adam-curriculum-learning
   description: Curriculum Learning for Convection Equation
   version: v0.0.1
-  run_mode: disabled
+  run_mode: online
 
 learning:
   device: cuda
   curriculum: True
   # seed: 0
+
+sweep:
+  name: "test-adam-curriculum-learning-sweep"
+  description: "Test sweep for Adam Optimizer and Curriculum Learning"
+  method: "random"
+  metric:
+    name: "Loss Overall"
+    goal: "minimize"
+  parameters:
+    optimizer.lr:
+      values: [0.01, 0.001, 0.0001]
+    optimizer.weight_decay:
+      values: [0.001, 0.0001, 0.00001]
 
 model:
   name: ConvectionPINNModel

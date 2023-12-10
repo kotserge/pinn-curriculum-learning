@@ -24,7 +24,7 @@ class CurriculumTrainer:
         train_data_loader: DataLoader,
         validation_data_loader: DataLoader,
         curriculum_step: int,
-        hyperparameters: dict,
+        config: dict,
         logging_path: Optional[str] = None,
         logging_dict: dict = None,
         device: str = (
@@ -41,7 +41,7 @@ class CurriculumTrainer:
             train_data_loader (DataLoader): The data loader for the training data.
             validation_data_loader (DataLoader): The data loader for the validation data.
             curriculum_step (int): The current curriculum step.
-            hyperparameters (dict): Hyperparameters of the curriculum learning process.
+            config (dict): Configuration of the curriculum trainer.
             logging_path (str, optional): Path to the logging directory. Defaults to None.
             device (str, optional): On which device the process should be run. Defaults to "cuda" if available, otherwise "cpu".
         """
@@ -54,7 +54,7 @@ class CurriculumTrainer:
 
         # Parameters
         self.curriculum_step: int = curriculum_step
-        self.hyperparameters: dict = hyperparameters
+        self.config: dict = config
 
         # Logging
         self.logging_path: Optional[str] = logging_path

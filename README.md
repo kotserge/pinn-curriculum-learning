@@ -33,6 +33,10 @@ This repository contains example for PINN with curriculum learning for solving P
   - [ ] Assertion tests (e.g. `assert x.shape == y.shape`)
   - [ ] (??) instead of stopping less than exact lowest loss, use some tolerance (e.g. 1e-3) to adjust for noise in the loss
 - [ ] Documentation (e.g. `README.md`, `requirements.txt`, `setup.py`, `LICENSE`, etc.)
+- [ ] Sweep over hyperparameters (e.g. learning rate, batch size, etc.)
+  - [ ] Need to move all inits to intialize function of the learner and keep it out of the training loop
+  - [ ] Adjust wand.init to not init for sweeps
+  - [ ] Ref. https://docs.wandb.ai/guides/sweeps/walkthrough
 
 ## Experiments
 
