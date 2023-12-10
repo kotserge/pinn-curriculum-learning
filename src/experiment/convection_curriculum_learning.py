@@ -375,6 +375,7 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
         if self._batch_loss.item() < self.best_loss:
             self.best_loss = self._batch_loss.item()
             self.counter = -1
+
         self.counter += 1
 
         return self.counter > wandb.config["training"]["stopping"]["patience"]

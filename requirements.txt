@@ -1,0 +1,13 @@
+ipython
+ipykernel
+ipywidgets
+matplotlib
+numpy
+pandas
+scikit-learn
+seaborn
+tqdm
+torch
+torchvision
+torchaudio
+plotly==5.18.0

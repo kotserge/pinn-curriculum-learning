@@ -49,9 +49,11 @@ print(f"* Using seed {seed}")
 torch.manual_seed(seed)
 hyperparameters["learning"]["seed"] = seed
 
-# Initialize model, optimizer, loss module and data loader
+# Initialize model, optimizer, loss module and curriculum learning components
+print("* Initializing model, optimizer, loss module and curriculum learning components")
 
 # Use dictionary to map model and optimizer names to classes
+# Does not actually do anything, just for invalidation of hyperparameters
 implemented_models = {
     "ConvectionPINNModel": model.ConvectionPINNModel,
 }

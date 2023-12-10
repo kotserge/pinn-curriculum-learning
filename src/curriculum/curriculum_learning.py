@@ -83,6 +83,9 @@ class CurriculumLearning:
     def initialize(self, **kwargs) -> None:
         """Function for initialization before the curriculum learning process starts.
 
+        This function is responsible for initializing the model, optimizer and scheduler.
+        The model and optimizer should be initialized here, by the user.
+
         By default the scheduler is  initialized here, and if overriden, the user should
             call super().initialize() or initialize the scheduler manually.
         """
@@ -94,7 +97,7 @@ class CurriculumLearning:
 
     def curriculum_step_preprocessing(self, **kwargs) -> None:
         """Function for preprocessing before each curriculum step.
-        By default the model and optimizer are initialized here, and if overriden, the user should
+        By default the trainer and evaluator are initialized here, and if overriden, the user should
             call super().curriculum_step_preprocessing() or initialize the model and optimizer manually.
         """
         self.trainer = self.trainerzz(
