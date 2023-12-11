@@ -107,6 +107,11 @@ class CurriculumLearning:
         By default the trainer and evaluator are initialized here, and if overriden, the user should
             call super().curriculum_step_preprocessing() or initialize the model and optimizer manually.
         """
+        # Get data loader and parameters for current curriculum step
+        self.latest_tdata_loader = self.scheduler.get_train_data_loader()
+        self.latest_vdata_loader = self.scheduler.get_validation_data_loader()
+        self.latest_edata_loader = self.scheduler.get_test_data_loader()
+
         self.trainer = self.trainerzz(
             model=self.model,
             optimizer=self.optimizer,
@@ -167,11 +172,6 @@ class CurriculumLearning:
         while self.scheduler.has_next():
             # Update scheduler
             self.scheduler.next()
-
-            # Get data loader and parameters for current curriculum step
-            self.latest_tdata_loader = self.scheduler.get_train_data_loader()
-            self.latest_vdata_loader = self.scheduler.get_validation_data_loader()
-            self.latest_edata_loader = self.scheduler.get_test_data_loader()
 
             # Preprocessing
             self.curriculum_step_preprocessing(
