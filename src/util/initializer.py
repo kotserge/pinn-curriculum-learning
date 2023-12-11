@@ -1,9 +1,11 @@
 # Module containing helper functions for the initialization of models, optimizers, etc.
 
 from model import ConvectionPINNModel
-from torch import optim, nn
-from torch.nn.modules.loss import _Loss
 from loss import ConvectionMSEPDELoss
+
+from torch import optim, nn
+from torch.utils.data import Dataset, Sampler, RandomSampler
+from torch.nn.modules.loss import _Loss
 
 
 def initialize_model(
@@ -107,3 +109,54 @@ def initialize_loss(
         raise NotImplementedError(f"Loss module {config['name']} not implemented.")
 
     return loss
+
+
+def initialize_sampler(
+    config: dict,
+    dataset: Dataset,
+) -> Sampler:
+    """Initializes a sampler.
+
+    Args:
+        config (dict): The configuration dictionary. Needs to contain the following keys:
+            - name (str): The name of the sampler. Depending on this name, different parameters are expected in the configuration dictionary.
+        dataset (Dataset): The dataset to be sampled.
+
+    Returns:
+        Sampler: The initialized sampler.
+    """
+    if config["name"] == "RandomSampler":
+        assert (
+            "replacement" in config
+        ), "replacement (bool) parameter is required for RandomSampler"
+        assert (
+            "num_samples" in config or "percent_samples" in config
+        ), "num_samples (int) or percent_samples (float) parameter is required for RandomSampler"
+        assert (
+            "percent_samples" not in config or "num_samples" not in config
+        ), "num_samples and percent_samples parameters are mutually exclusive for RandomSampler"
+        assert (
+            "percent_samples" in config
+            and isinstance(config["percent_samples"], float)
+            and 0.0 <= config["percent_samples"] <= 1.0
+        ) or (
+            "num_samples" in config
+            and isinstance(config["num_samples"], int)
+            and config["num_samples"] > 0
+        ), "percent_samples (float) must be in range [0.0, 1.0] or num_samples (int) must be greater than 0 for RandomSampler"
+
+        num_samples = None
+        if "percent_samples" in config:
+            num_samples = int(len(dataset) * config["percent_samples"])
+        elif "num_samples" in config:
+            num_samples = config["num_samples"]
+
+        sampler = RandomSampler(
+            data_source=dataset,
+            replacement=config["replacement"],
+            num_samples=num_samples,
+        )
+    else:
+        raise NotImplementedError(f"Sampler {config['name']} not implemented.")
+
+    return sampler

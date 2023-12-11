@@ -60,7 +60,6 @@ Note, currently conditional sweeps are not supported, meaning that we have to ei
 
 ### Implementation
 
-- [ ] Add random sampling of points in dataset
 - [ ] Check for `TODO`'s in code
 - [ ] Clean-Up Code (e.g. remove unused imports, Keys, etc.)
 - [ ] `YAML`; some how reduce? maybe split sweeps and normal runs?

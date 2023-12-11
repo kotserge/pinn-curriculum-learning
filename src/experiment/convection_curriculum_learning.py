@@ -335,6 +335,8 @@ class ConvectionCurriculumScheduler(curriculum.CurriculumScheduler):
     def _get_parameterized_dataloader(self, mode: str, **kwargs) -> DataLoader:
         """Returns a parameterized dataset for the current curriculum step.
 
+        If a sampler is specified in the config, it is used to sample the dataset.
+
         Returns:
             Dataset: Parameterized dataset
         """
@@ -351,12 +353,20 @@ class ConvectionCurriculumScheduler(curriculum.CurriculumScheduler):
             snr=wandb.config["scheduler"]["data"][mode]["pde"]["snr"],
         )
 
+        sampler = None
+        if "sampler" in wandb.config["scheduler"]["data"][mode]:
+            sampler = util.initializer.initialize_sampler(
+                config=wandb.config["scheduler"]["data"][mode]["sampler"],
+                dataset=dataset,
+            )
+
         return DataLoader(
             dataset=dataset,
             batch_size=len(dataset)
             if wandb.config["scheduler"]["data"][mode]["batch_size"] == "full"
             else wandb.config["scheduler"]["data"][mode]["batch_size"],
             shuffle=wandb.config["scheduler"]["data"][mode]["shuffle"],
+            sampler=sampler,
             **kwargs,
         )
 

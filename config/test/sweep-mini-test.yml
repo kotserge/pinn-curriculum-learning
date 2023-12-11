@@ -54,6 +54,10 @@ scheduler:
     train:
       batch_size: full
       shuffle: False
+      sampler:
+        name: RandomSampler
+        replacement: True
+        percent_samples: 0.1
       pde:
         convection: [1, 5, 10, 15, 20, 25, 30]
         l: 6.283185307179586
