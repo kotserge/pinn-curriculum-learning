@@ -1,6 +1,6 @@
 # Physical Informed Neural Networks (PINNs) for Solving Partial Differential Equations (PDEs)
 
-This repository contains example for PINN with curriculum learning for solving PDEs. The code is based on the paper [Krishnapriyan, Aditi, et al. "Characterizing possible failure modes in physics-informed neural networks." Advances in Neural Information Processing Systems 34 (2021): 26548-26560.](https://proceedings.neurips.cc/paper/2021/file/df438e5206f31600e6ae4af72f2725f1-Paper.pdf) ([Archive Link](https://arxiv.org/abs/2109.01050))
+This repository contains example for PINN with curriculum learning for solving PDEs. The code is based on the paper by [Krishnapriyan, Aditi, et al. "Characterizing possible failure modes in physics-informed neural networks." Advances in Neural Information Processing Systems 34 (2021): 26548-26560.](https://proceedings.neurips.cc/paper/2021/file/df438e5206f31600e6ae4af72f2725f1-Paper.pdf) ([Archive Link](https://arxiv.org/abs/2109.01050))
 
 ## Overview
 
@@ -17,12 +17,12 @@ The following is an example taken from `sweep-mini-test.yaml`, re-defining the t
 
 ```yaml
 sweep:
-  name: "test-adam-curriculum-learning-sweep"
-  description: "Test sweep for Adam Optimizer and Curriculum Learning"
-  method: "random"
+  name: test-adam-curriculum-learning-sweep
+  description: Test sweep for Adam Optimizer and Curriculum Learning
+  method: random
   metric:
-    name: "Loss Overall"
-    goal: "minimize"
+    name: Loss Overall
+    goal: minimize
   parameters:
     training:
       parameters:
@@ -60,7 +60,6 @@ Note, currently conditional sweeps are not supported, meaning that we have to ei
 
 ### Implementation
 
-- [ ] Move Loss to util.init module
 - [ ] Add random sampling of points in dataset
 - [ ] Check for `TODO`'s in code
 - [ ] Clean-Up Code (e.g. remove unused imports, Keys, etc.)

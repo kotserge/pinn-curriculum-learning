@@ -24,7 +24,7 @@ class CurriculumLearning:
         self,
         modelzz: Type[nn.Module],
         optimizerzz: Type[Optimizer],
-        loss: _Loss,
+        losszz: Type[_Loss],
         schedulerzz: Type[CurriculumScheduler],
         trainerzz: Type[CurriculumTrainer],
         evaluatorzz: Type[CurriculumEvaluator],
@@ -41,7 +41,7 @@ class CurriculumLearning:
         Args:
             modelzz (nn.Module): The model class to be used. This class needs to be initialized with the hyperparameters during the curriculum learning process.
             optimizerzz (Optimizer): The optimizer class to be used. This class needs to be initialized with the model parameters during the curriculum learning process.
-            loss (_Loss): The loss module (or function) to be used.
+            losszz (_Loss): The loss module class to be used. This class needs to be initialized with the hyperparameters during the curriculum learning process.
             scheduler (CurriculumScheduler): The scheduler to be used.
             trainer (Type[CurriculumTrainer]): The trainer class to be used.
             evaluator (Type[CurriculumEvaluator]): The evaluator class to be used.
@@ -56,7 +56,8 @@ class CurriculumLearning:
         self.optimizerzz: Optimizer = optimizerzz
         self.optimizer: Optimizer = None
 
-        self.loss: _Loss = loss
+        self.losszz: _Loss = losszz
+        self.loss: _Loss = None
 
         # Curriculum learning components
         self.schedulerzz: Type[CurriculumScheduler] = schedulerzz
@@ -97,6 +98,12 @@ class CurriculumLearning:
 
     def curriculum_step_preprocessing(self, **kwargs) -> None:
         """Function for preprocessing before each curriculum step.
+
+        This function is responsible for preprocessing before each curriculum step,
+            thus initializing the trainer, evaluator and the loss module for the current curriculum step.
+            The loss module should be initialized here, if it is dependent on the curriculum step, else it should be
+            initialized in the initialize() function.
+
         By default the trainer and evaluator are initialized here, and if overriden, the user should
             call super().curriculum_step_preprocessing() or initialize the model and optimizer manually.
         """

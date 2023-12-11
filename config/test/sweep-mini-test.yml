@@ -41,8 +41,8 @@ optimizer:
   weight_decay: 0.001
 
 loss:
-  name: ConvectionLoss
-  custom: True
+  name: ConvectionMSEPDELoss
+  convection: [1, 5, 10, 15, 20, 25, 30]
   regularization: 1
 
 scheduler:

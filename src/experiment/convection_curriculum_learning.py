@@ -187,7 +187,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         os.makedirs(self.model_path, exist_ok=True)
         os.makedirs(self.image_path, exist_ok=True)
 
-        # Initialize scheduler, model and optimizer
+        # Initialize scheduler, model, optimizer
         self.scheduler = self.schedulerzz(wandb.config)
 
         self.model = util.initializer.initialize_model(wandb.config["model"])
@@ -197,14 +197,23 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             wandb.config["optimizer"], self.model
         )
 
+    def curriculum_step_preprocessing(self, **kwargs) -> None:
+        """initialization of the loss module."""
+        # Initialize loss module
+        self.loss = util.initializer.initialize_loss(
+            wandb.config["loss"],
+            curriculum_step=self.scheduler.curriculum_step,
+            model=self.model,
+        )
+
+        # Initialize trainer and evaluator, they need the loss module to be initialized
+        super().curriculum_step_preprocessing()
+
     def curriculum_step_postprocessing(self, **kwargs) -> None:
         """Logging for each curriculum step.
 
         Saves the model after each curriculum step.
         """
-        # Call super class method, for baseline training resetting the model to initial state
-        super().curriculum_step_postprocessing()
-
         # Save intermediate model
         torch.save(
             {
@@ -221,6 +230,9 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
 
         # Commit logged data during curriculum step
         wandb.log(data={}, commit=True, step=self.scheduler.curriculum_step)
+
+        # Call super class method, for baseline training resetting the model to initial state
+        super().curriculum_step_postprocessing()
 
     def finalize(self, **kwargs) -> None:
         """Logging after the curriculum learning process has finished.
@@ -389,15 +401,10 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
         self.optimizer.zero_grad()
         prediction = self.model(self.closure_x, self.closure_t)
         loss, _, _ = self.loss(
-            prediction,
-            self.closure_y,
-            self.closure_x,
-            self.closure_t,
-            wandb.config["scheduler"]["data"]["train"]["pde"]["convection"][
-                self.curriculum_step
-            ],
-            wandb.config["loss"]["regularization"],
-            self.model,
+            input=prediction,
+            target=self.closure_y,
+            x=self.closure_x,
+            t=self.closure_t,
         )
         loss.backward()
         return loss
@@ -497,15 +504,10 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
 
             ## Step 3 - Calculate the losses
             loss, loss_mse, loss_pde = self.loss(
-                prediction,
-                data_labels,
-                x,
-                t,
-                wandb.config["scheduler"]["data"]["test"]["pde"]["convection"][
-                    self.curriculum_step
-                ],
-                wandb.config["loss"]["regularization"],
-                self.model,
+                input=prediction,
+                target=data_labels,
+                x=x,
+                t=t,
             )
 
             # Step 4 - Accumulate loss for current batch

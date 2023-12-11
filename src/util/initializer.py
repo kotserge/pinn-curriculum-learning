@@ -2,6 +2,8 @@
 
 from model import ConvectionPINNModel
 from torch import optim, nn
+from torch.nn.modules.loss import _Loss
+from loss import ConvectionMSEPDELoss
 
 
 def initialize_model(
@@ -66,3 +68,42 @@ def initialize_optimizer(
         raise NotImplementedError(f"Optimizer {config['name']} not implemented.")
 
     return optimizer
+
+
+def initialize_loss(
+    config: dict,
+    **kwargs,
+) -> _Loss:
+    """Initializes a loss module.
+
+    Args:
+        config (dict): The configuration dictionary. Needs to contain the following keys:
+            - name (str): The name of the loss module. Depending on this name, different parameters are expected in the configuration dictionary.
+
+    Returns:
+        _Loss: The initialized loss module.
+    """
+    if config["name"] == "ConvectionMSEPDELoss":
+        assert (
+            "curriculum_step" in kwargs
+        ), "curriculum_step parameter is required for ConvectionMSEPDELoss"
+        assert (
+            "convection" in config
+        ), "convection parameter is required for ConvectionMSEPDELoss"
+        assert kwargs["curriculum_step"] < len(
+            config["convection"]
+        ), f"Convection parameter for curriculum step {kwargs['curriculum_step']} not found"
+        assert (
+            "regularization" in config
+        ), "regularization parameter is required for ConvectionMSEPDELoss"
+        assert "model" in kwargs, "model parameter is required for ConvectionMSEPDELoss"
+
+        loss = ConvectionMSEPDELoss(
+            convection=config["convection"][kwargs["curriculum_step"]],
+            regularization=config["regularization"],
+            model=kwargs["model"],
+        )
+    else:
+        raise NotImplementedError(f"Loss module {config['name']} not implemented.")
+
+    return loss

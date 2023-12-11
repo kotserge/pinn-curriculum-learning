@@ -63,13 +63,15 @@ implemented_optimizers = {
     "SGD": optim.SGD,
 }
 
-loss = loss.convection_mse_pde
+implemented_losses = {
+    "ConvectionMSEPDELoss": loss.ConvectionMSEPDELoss,
+}
 
 # Init curriculum learning components
 learner = experiment.ConvectiveCurriculumLearning(
     modelzz=implemented_models[hyperparameters["model"]["name"]],
     optimizerzz=implemented_optimizers[hyperparameters["optimizer"]["name"]],
-    loss=loss,
+    losszz=implemented_losses[hyperparameters["loss"]["name"]],
     schedulerzz=experiment.ConvectionCurriculumScheduler,
     trainerzz=experiment.ConvectionEquationTrainer,
     evaluatorzz=experiment.ConvectionEquationEvaluator,
