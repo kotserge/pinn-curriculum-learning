@@ -36,31 +36,6 @@ sweep:
 
 Note, currently conditional sweeps are not supported, meaning that we have to either carefully choose the parameters or run multiple sweeps over the dependent parameters. Another approach from this [issue](https://github.com/wandb/wandb/issues/1487).
 
-# To Do
-
-## Implementation
-
-- [ ] Move Loss to util.init module
-- [ ] Add random sampling of points in dataset
-- [ ] Check for `TODO`'s in code
-- [ ] Clean-Up Code (e.g. remove unused imports, Keys, etc.)
-- [ ] `YAML`; some how reduce? maybe split sweeps and normal runs?
-
-## Training
-
-- [ ] Useful metrics to track?
-- [ ] Toleration for loss? (e.g. if loss is below a certain threshold * tolerance, stop training)
-
-## Validation
-
-- [ ] Useful metrics to track?
-- [ ] Plots
-
-## Other
-
-- [ ] Clean-Up Documentation (e.g. `README.md`, `requirements.txt`, `LICENSE`, etc.)
-- [ ] Publish? (e.g. `requirements.txt`, `LICENSE`, etc.)
-
 ## Research Questions
 
 ### Main Research Questions
@@ -79,3 +54,29 @@ Note, currently conditional sweeps are not supported, meaning that we have to ei
   - [ ] Why is it unstable?
   - [ ] How to make it more stable?
   - [ ] Find good hyperparameters for LBFGS
+
+
+## To Do
+
+### Implementation
+
+- [ ] Move Loss to util.init module
+- [ ] Add random sampling of points in dataset
+- [ ] Check for `TODO`'s in code
+- [ ] Clean-Up Code (e.g. remove unused imports, Keys, etc.)
+- [ ] `YAML`; some how reduce? maybe split sweeps and normal runs?
+
+### Training
+
+- [ ] Useful metrics to track?
+- [ ] Toleration for loss? (e.g. if loss is below a certain threshold * tolerance, stop training)
+
+### Validation
+
+- [ ] Useful metrics to track?
+- [ ] Plots
+
+### Other
+
+- [ ] Clean-Up Documentation (e.g. `README.md`, `requirements.txt`, `LICENSE`, etc.)
+- [ ] Publish? (e.g. `requirements.txt`, `LICENSE`, etc.)
