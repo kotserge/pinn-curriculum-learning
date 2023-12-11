@@ -28,7 +28,12 @@ class ConvectionMSEPDELoss(_Loss):
         self.model: nn.Module = model
         self.regularization: float = regularization
 
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def __call__(self, *args: Any, **kwds: Any) -> Tensor:
+        """Calculates the loss for the convection equation PDE.
+
+        Returns:
+            Tensor: The loss
+        """
         assert "input" in kwds, "input parameter is required for ConvectionMSEPDELoss"
         assert "target" in kwds, "target parameter is required for ConvectionMSEPDELoss"
         assert "x" in kwds, "x parameter is required for ConvectionMSEPDELoss"

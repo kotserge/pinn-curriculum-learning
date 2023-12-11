@@ -422,6 +422,13 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
     def run(self, **kwargs) -> None:
         """Runs a basic training process."""
 
+        # CLI logging
+        print(
+            "-" * 50
+            + f"\nTraining for Curriculum Step {self.curriculum_step}\n"
+            + "-" * 50
+        )
+
         # Set model to training mode
         self.model.train()
         self.optimizer.zero_grad()

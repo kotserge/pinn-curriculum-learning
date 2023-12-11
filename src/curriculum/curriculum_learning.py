@@ -13,11 +13,18 @@ from .curriculum_trainer import CurriculumTrainer
 class CurriculumLearning:
     """Base class for curriculum learning.
 
-    This class is responsible for the curriculum learning process based on the given scheduler, trainer and evaluator.
+    This class is responsible for the curriculum learning process.
 
-    It is possible to use the class as is, without any logging. Logging is done by calling the init_logging,
-    curriculum_step_logging and end_logging methods. These methods should be implemented by the user by extending
-    this class. If logging is not required, the methods can be left empty.
+    The curriculum learning process is defined by the user by extending this class and implementing the
+    initialize, curriculum_step_preprocessing, curriculum_step_postprocessing and finalize methods.
+
+    The initialize method is responsible for initializing the model, optimizer and scheduler.
+    The curriculum_step_preprocessing method is responsible for preprocessing before each curriculum step,
+        thus initializing the trainer, evaluator and the loss module for the current curriculum step.
+    The curriculum_step_postprocessing method is responsible for processing after each curriculum step.
+    The finalize method is responsible for finalization after the curriculum learning process ends.
+
+    The curriculum learning process is started by calling the run method.
     """
 
     def __init__(
@@ -42,12 +49,13 @@ class CurriculumLearning:
             modelzz (nn.Module): The model class to be used. This class needs to be initialized with the hyperparameters during the curriculum learning process.
             optimizerzz (Optimizer): The optimizer class to be used. This class needs to be initialized with the model parameters during the curriculum learning process.
             losszz (_Loss): The loss module class to be used. This class needs to be initialized with the hyperparameters during the curriculum learning process.
-            scheduler (CurriculumScheduler): The scheduler to be used.
-            trainer (Type[CurriculumTrainer]): The trainer class to be used.
-            evaluator (Type[CurriculumEvaluator]): The evaluator class to be used.
-            hyperparameters (dict): Hyperparameters of the curriculum learning process.
-            device (str, optional): On which device the process should be run. Defaults to "cuda" if available, otherwise "cpu".
+            schedulerzz (CurriculumScheduler): The scheduler class to be used.
+            trainerzz (Type[CurriculumTrainer]): The trainer class to be used.
+            evaluatorzz (Type[CurriculumEvaluator]): The evaluator class to be used.
+            hyperparameters (dict): Hyperparameters of the whole curriculum learning process.
             logging_path (str, optional): Path to the logging directory. Defaults to None.
+            logging_dict (dict, optional): Dictionary containing the logging information. Defaults to None.
+            device (str, optional): On which device the process should be run. Defaults to "cuda" if available, otherwise "cpu".
         """
         # Model, optimizer, loss module and data loader
         self.modelzz: nn.Module = modelzz

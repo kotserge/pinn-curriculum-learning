@@ -36,6 +36,11 @@ class CurriculumEvaluator:
             data_loader (DataLoader): The data loader to be used.
             curriculum_step (int): The current curriculum step.
             config (dict): Configuration of the curriculum evaluator.
+            logging_path (Optional[str], optional): Path to save the logs. Defaults to None.
+            logging_dict (dict, optional): Dictionary containing the logging information.
+                Defaults to None.
+            device (str, optional): Device to be used. Defaults to "cuda" if available, else
+                "cpu".
         """
         # Model, optimizer, loss module and data loader
         self.model: nn.Module = model

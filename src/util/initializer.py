@@ -20,7 +20,16 @@ def initialize_model(
     Returns:
         nn.Module: The initialized model.
     """
+    assert "name" in config, "name parameter is required for model initialization"
+
     if config["name"] == "ConvectionPINNModel":
+        assert (
+            "input_dim" in config
+        ), "input_dim parameter is required for ConvectionPINNModel"
+        assert (
+            "hidden_dim" in config
+        ), "hidden_dim parameter is required for ConvectionPINNModel"
+
         model = ConvectionPINNModel(
             input_dim=config["input_dim"],
             hidden_dim=config["hidden_dim"],
@@ -45,26 +54,53 @@ def initialize_optimizer(
     Returns:
         Optimizer: The initialized optimizer.
     """
+    assert "name" in config, "name parameter is required for optimizer initialization"
+
     if config["name"] == "Adam":
         optimizer = optim.Adam(
             model.parameters(),
-            lr=config["lr"],
-            weight_decay=config["weight_decay"],
+            lr=config["lr"] if "lr" in config else 1e-3,
+            betas=config["betas"] if "betas" in config else (0.9, 0.999),
+            eps=config["eps"] if "eps" in config else 1e-8,
+            weight_decay=config["weight_decay"] if "weight_decay" in config else 0.0,
         )
+
     elif config["name"] == "LBFGS":
+        assert (
+            "line_search_fn" not in config
+            or "line_search_fn" in config
+            and config["line_search_fn"] == "strong_wolfe"
+        ), "line_search_fn parameter must be 'strong_wolfe' for LBFGS optimizer initialization or not set"
+
         optimizer = optim.LBFGS(
             model.parameters(),
-            lr=config["lr"],
-            history_size=config["history_size"],
-            max_iter=config["max_iter"],
+            lr=config["lr"] if "lr" in config else 1.0,
+            max_iter=config["max_iter"] if "max_iter" in config else 20,
+            max_eval=config["max_eval"] if "max_eval" in config else None,
+            tolerance_grad=config["tolerance_grad"]
+            if "tolerance_grad" in config
+            else 1e-7,
+            tolerance_change=config["tolerance_change"]
+            if "tolerance_change" in config
+            else 1e-9,
+            history_size=config["history_size"] if "history_size" in config else 100,
+            line_search_fn=config["line_search_fn"]
+            if "line_search_fn" in config
+            else None,
         )
+
     elif config["name"] == "SGD":
+        assert (
+            "lr" in config
+        ), "lr parameter is required for SGD optimizer initialization"
+
         optimizer = optim.SGD(
             model.parameters(),
             lr=config["lr"],
-            momentum=config["momentum"],
-            weight_decay=config["weight_decay"],
-            nesterov=config["nesterov"],
+            momentum=config["momentum"] if "momentum" in config else 0.0,
+            dampening=config["dampening"] if "dampening" in config else 0.0,
+            weight_decay=config["weight_decay"] if "weight_decay" in config else 0.0,
+            nesterov=config["nesterov"] if "nesterov" in config else False,
         )
     else:
         raise NotImplementedError(f"Optimizer {config['name']} not implemented.")
@@ -85,6 +121,8 @@ def initialize_loss(
     Returns:
         _Loss: The initialized loss module.
     """
+    assert "name" in config, "name parameter is required for loss initialization"
+
     if config["name"] == "ConvectionMSEPDELoss":
         assert (
             "curriculum_step" in kwargs
