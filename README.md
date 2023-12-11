@@ -40,11 +40,11 @@ Note, currently conditional sweeps are not supported, meaning that we have to ei
 
 ## Implementation
 
-- [ ] Clean-Up Documentation (e.g. `README.md`, `requirements.txt`, `LICENSE`, etc.)
+- [ ] Move Loss to util.init module
+- [ ] Add random sampling of points in dataset
 - [ ] Check for `TODO`'s in code
 - [ ] Clean-Up Code (e.g. remove unused imports, Keys, etc.)
 - [ ] `YAML`; some how reduce? maybe split sweeps and normal runs?
-- [ ] Publish? (e.g. `requirements.txt`, `LICENSE`, etc.)
 
 ## Training
 
@@ -56,13 +56,26 @@ Note, currently conditional sweeps are not supported, meaning that we have to ei
 - [ ] Useful metrics to track?
 - [ ] Plots
 
-## Experiments
+## Other
+
+- [ ] Clean-Up Documentation (e.g. `README.md`, `requirements.txt`, `LICENSE`, etc.)
+- [ ] Publish? (e.g. `requirements.txt`, `LICENSE`, etc.)
+
+## Research Questions
+
+### Main Research Questions
+
+- [ ] Sample size of training points
+- [ ] Noise in training data
+
+### Further Research Questions
+
+- [ ] Different sampling methods and sizes for training points
+- [ ] Model architecture (e.g. number of layers, number of neurons per layer, activation functions, etc.)
+
+### Other Research Questions
 
 - [ ] LBFGS seems promising, but *slow* and **unstable** (e.g. sometimes it works, sometimes it doesn't)
   - [ ] Why is it unstable?
   - [ ] How to make it more stable?
-- [ ] What are good experiments to run?
-- [ ] Maybe adjust loss module (sth different than MSE)
-  - [ ] Regularization term of the PDE loss; different $\lambda$'s (currently 1), as PDE loss is significantly lower than MSE loss
-  - [ ] why is the MSE loss always close to 1 at later stages of training? -> maybe guides the training towards uniform solution instead of the periodic one 
-
+  - [ ] Find good hyperparameters for LBFGS
