@@ -34,6 +34,9 @@ def comparison_plot(
         origin="lower",
     )
     axes[0].set_title(params["title"]["ground_truth"])
+    axes[0].set_xlabel("t")
+    axes[0].set_ylabel("x")
+
     axes[1].imshow(
         prediction,
         cmap="jet",
@@ -42,6 +45,8 @@ def comparison_plot(
         origin="lower",
     )
     axes[1].set_title(params["title"]["prediction"])
+    axes[1].set_xlabel("t")
+    axes[1].set_ylabel("x")
 
     fig.tight_layout()
     if "savefig_path" in params:

@@ -1,6 +1,7 @@
 # Physical Informed Neural Networks (PINNs) for Solving Partial Differential Equations (PDEs)
 
 This repository contains example for PINN with curriculum learning for solving PDEs. The code is based on the paper by [Krishnapriyan, Aditi, et al. "Characterizing possible failure modes in physics-informed neural networks." Advances in Neural Information Processing Systems 34 (2021): 26548-26560.](https://proceedings.neurips.cc/paper/2021/file/df438e5206f31600e6ae4af72f2725f1-Paper.pdf) ([Archive Link](https://arxiv.org/abs/2109.01050))
+([Code](https://github.com/a1k12/characterizing-pinns-failure-modes)).
 
 ## Overview
 
@@ -55,22 +56,6 @@ Note, currently conditional sweeps are not supported, meaning that we have to ei
   - [ ] How to make it more stable?
   - [ ] Find good hyperparameters for LBFGS
 
-
-## To Do
-
-### Implementation
-
-- [ ] Asserts
-
-### Training
-
-- [ ] Useful metrics to track?
-- [ ] Toleration for loss? (e.g. if loss is below a certain threshold * tolerance, stop training)
-
-### Validation
-
-- [ ] Useful metrics to track?
-- [ ] Plots
 
 ### Other
 

@@ -501,6 +501,7 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
         loss = 0.0
         loss_mse = 0.0
         loss_pde = 0.0
+        loss_l2_rel = 0.0
 
         # Store predictions and ground truth
         predictions = []
@@ -520,17 +521,24 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
             prediction = self.model(x, t)
 
             ## Step 3 - Calculate the losses
-            loss, loss_mse, loss_pde = self.loss(
+            _loss, _loss_mse, _loss_pde = self.loss(
                 input=prediction,
                 target=data_labels,
                 x=x,
                 t=t,
             )
+            _loss_l2_rel = torch.mean(
+                torch.div(
+                    torch.linalg.norm(torch.sub(prediction, data_labels), 2),
+                    torch.linalg.norm(data_labels, 2),
+                )
+            )
 
             # Step 4 - Accumulate loss for current batch
-            loss += loss.item()
-            loss_mse += loss_mse.item()
-            loss_pde += loss_pde.item()
+            loss += _loss.item()
+            loss_mse += _loss_mse.item()
+            loss_pde += _loss_pde.item()
+            loss_l2_rel += _loss_l2_rel.item()
 
             # Step 5 - Store predictions and ground truth
             predictions.append(prediction)
@@ -564,6 +572,7 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                 "Loss Overall": loss,
                 "Loss MSE": loss_mse,
                 "Loss PDE": loss_pde,
+                "Loss L2 Rel": loss_l2_rel,
                 "Convection Coefficient": wandb.config["scheduler"]["data"]["test"][
                     "pde"
                 ]["convection"][self.curriculum_step],
@@ -582,5 +591,5 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
             + f"\nEvaluation Results for Curriculum Step {self.curriculum_step}\n"
             + "-" * 50
         )
-        print(f"Loss: {loss}, MSE: {loss_mse}, PDE: {loss_pde}")
+        print(f"Loss: {loss}, MSE: {loss_mse}, PDE: {loss_pde}, L2 Rel: {loss_l2_rel}")
         print("-" * 50)
