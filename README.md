@@ -49,15 +49,7 @@ Note, currently conditional sweeps are not supported, meaning that we have to ei
 - [ ] Different sampling methods and sizes for training points
 - [ ] Model architecture (e.g. number of layers, number of neurons per layer, activation functions, etc.)
 
-### Other Research Questions
-
-- [ ] LBFGS seems promising, but *slow* and **unstable** (e.g. sometimes it works, sometimes it doesn't)
-  - [ ] Why is it unstable?
-  - [ ] How to make it more stable?
-  - [ ] Find good hyperparameters for LBFGS
-
-
-### Other
+## Other
 
 - [ ] Clean-Up Documentation (e.g. `README.md`, `requirements.txt`, `LICENSE`, etc.)
 - [ ] Publish? (e.g. `requirements.txt`, `LICENSE`, etc.)

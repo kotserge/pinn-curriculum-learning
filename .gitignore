@@ -12,3 +12,6 @@ wandb/
 # Ignore data files
 data/
 !src/data/
+
+# Ignore presentation folder
+presentation/

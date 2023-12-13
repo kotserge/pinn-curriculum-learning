@@ -50,28 +50,15 @@ torch.manual_seed(seed)
 hyperparameters["learning"]["seed"] = seed
 
 # Initialize model, optimizer, loss module and curriculum learning components
-print("* Initializing model, optimizer, loss module and curriculum learning components")
+print("* Initializing curriculum learning components")
 
-# Use dictionary to map model and optimizer names to classes
-# Does not actually do anything, just for invalidation of hyperparameters
-implemented_models = {
-    "ConvectionPINNModel": model.ConvectionPINNModel,
-}
-implemented_optimizers = {
-    "Adam": optim.Adam,
-    "LBFGS": optim.LBFGS,
-    "SGD": optim.SGD,
-}
-
-implemented_losses = {
-    "ConvectionMSEPDELoss": loss.ConvectionMSEPDELoss,
-}
-
-# Init curriculum learning components
+# Init curriculum learning components based on hyperparameters
+# No model, optimizer or loss module is passed to the curriculum learning components
+# as they are initialized in the curriculum learning components themselves
 learner = experiment.ConvectiveCurriculumLearning(
-    modelzz=implemented_models[hyperparameters["model"]["name"]],
-    optimizerzz=implemented_optimizers[hyperparameters["optimizer"]["name"]],
-    losszz=implemented_losses[hyperparameters["loss"]["name"]],
+    modelzz=None,
+    optimizerzz=None,
+    losszz=None,
     schedulerzz=experiment.ConvectionCurriculumScheduler,
     trainerzz=experiment.ConvectionEquationTrainer,
     evaluatorzz=experiment.ConvectionEquationEvaluator,

@@ -1,0 +1,78 @@
+overview:
+  entity: serge-kotchourko
+  project: Curriculum Learning Convection Equation
+  group: Curriculum Learning; LBFGS LR 0.5 + strong_wolfe; RS 100 samples
+  job_type: Training
+  experiment: test-lbfgs-curriculum-learning
+  description: >
+    Curriculum Learning for Convection Equation
+    using Adam Optimizer, Curriculum Learning and 
+    Random Sampler with replacement with 20% of random
+    samples from the dataset/grid-points.
+  version: v0.0.1
+  run_mode: disabled
+
+learning:
+  device: cuda
+  curriculum: True
+  # seed: 0
+
+model:
+  name: ConvectionPINNModel
+  input_dim: 2
+  hidden_dim: 50
+
+optimizer:
+  name: LBFGS
+  lr: 0.5
+  max_iter: 5
+  history_size: 100
+  line_search_fn: strong_wolfe
+
+loss:
+  name: ConvectionMSEPDELoss
+  convection: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+  regularization: 1
+
+scheduler:
+  end: 29
+  start: 0
+  step: 1
+
+  data:
+    train:
+      batch_size: full
+      shuffle: False
+      sampler:
+        name: RandomSampler
+        replacement: True
+        num_samples: 100
+      pde:
+        convection: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+        l: 6.283185307179586
+        n: 100
+        snr: 0
+        t: 1
+
+    validation:
+      batch_size: full
+      shuffle: False
+      pde:
+        convection: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+        l: 6.283185307179586
+        n: 1
+        snr: 0
+        t: 1
+
+    test:
+      batch_size: full
+      shuffle: False
+      pde:
+        convection: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+        l: 6.283185307179586
+        n: 100
+        snr: 0
+        t: 1
+
+training:
+  epochs: 250

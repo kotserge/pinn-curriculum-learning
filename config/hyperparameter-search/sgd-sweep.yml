@@ -1,16 +1,37 @@
 overview:
-  entity: serge-kotchourko
+  entity: singing-kangaroo
   project: Curriculum Learning Convection Equation
-  group: Curriculum Learning; LBFGS LR 0.5 + strong_wolfe; RS 100 samples
-  job_type: Training
-  experiment: test-lbfgs-curriculum-learning
+  group: Hyperparameter Search for Optimizer; Curriculum Learning
+  experiment: sgd-hyperparameter-curriculum-learning-sweep
   description: >
-    Curriculum Learning for Convection Equation
-    using Adam Optimizer, Curriculum Learning and 
-    Random Sampler with replacement with 20% of random
-    samples from the dataset/grid-points.
+    SGD Optimizer Hyperparameter Sweep for Curriculum Learning
+    with fixed curriculum learning parameters, sampling space, and model
+    and loss.
   version: v0.0.1
   run_mode: online
+
+sweep:
+  name: sgd-hyperparameter-curriculum-learning-sweep
+  description: SGD Optimizer Hyperparameter Sweep for Curriculum Learning
+  method: bayes
+  metric:
+    name: Loss Overall
+    goal: minimize
+  parameters:
+    optimizer:
+      parameters:
+        name:
+          value: SGD
+        lr:
+          values: [1, 0.1, 0.01, 0.001, 0.0001]
+        momentum:
+          values: [0, 0.1, 0.5, 0.9]
+        weight_decay:
+          values: [0, 0.1, 0.01, 0.001, 0.0001]
+    training:
+      parameters:
+        epochs:
+          values: [50, 100, 250, 500]
 
 learning:
   device: cuda
@@ -21,11 +42,6 @@ model:
   name: ConvectionPINNModel
   input_dim: 2
   hidden_dim: 50
-
-optimizer:
-  name: LBFGS
-  lr: 0.5
-  line_search_fn: strong_wolfe
 
 loss:
   name: ConvectionMSEPDELoss
@@ -71,6 +87,3 @@ scheduler:
         n: 100
         snr: 0
         t: 1
-
-training:
-  epochs: 250
