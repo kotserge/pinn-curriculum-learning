@@ -66,11 +66,17 @@ def initialize_optimizer(
         )
 
     elif config["name"] == "LBFGS":
-        assert (
-            "line_search_fn" not in config
-            or "line_search_fn" in config
+        assert "line_search_fn" not in config or (
+            "line_search_fn" in config
             and config["line_search_fn"] == "strong_wolfe"
+            or config["line_search_fn"] == "None"
         ), "line_search_fn parameter must be 'strong_wolfe' for LBFGS optimizer initialization or not set"
+
+        line_search_fn = (
+            "strong_wolfe"
+            if "line_search_fn" in config and config["line_search_fn"] == "strong_wolfe"
+            else None
+        )
 
         optimizer = optim.LBFGS(
             model.parameters(),
@@ -84,9 +90,7 @@ def initialize_optimizer(
             if "tolerance_change" in config
             else 1e-9,
             history_size=config["history_size"] if "history_size" in config else 100,
-            line_search_fn=config["line_search_fn"]
-            if "line_search_fn" in config
-            else None,
+            line_search_fn=line_search_fn,
         )
 
     elif config["name"] == "SGD":
