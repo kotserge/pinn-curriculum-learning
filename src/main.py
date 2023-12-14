@@ -36,20 +36,6 @@ print(
     f"* Experiment: {hyperparameters['overview']['experiment']}"
 )
 
-print("* Configuring based on hyperparameters")
-
-# Seeding
-seed: int = (
-    hyperparameters["learning"]
-    if "seed" in hyperparameters["learning"]
-    else torch.seed()
-)
-
-print(f"* Using seed {seed}")
-torch.manual_seed(seed)
-hyperparameters["learning"]["seed"] = seed
-
-# Initialize model, optimizer, loss module and curriculum learning components
 print("* Initializing curriculum learning components")
 
 # Init curriculum learning components based on hyperparameters

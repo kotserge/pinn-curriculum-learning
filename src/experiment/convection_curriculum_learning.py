@@ -178,6 +178,20 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
 
     def _finalize_setup(self, **kwargs) -> None:
         """Helper function for setup, if this is a new curriculum learning process."""
+
+        # Seed everything
+        seed: int = (
+            wandb.config["learning"]["seed"]
+            if "seed" in wandb.config["learning"]
+            else torch.seed()
+        )
+
+        torch.manual_seed(seed)
+        wandb.config.update(
+            {"learning": wandb.config["learning"] | {"seed": seed}},
+            allow_val_change=True,
+        )
+
         # create directory for model
         self.logging_path = f"data/run/{self.timestamp}-{self._name}"
         self.model_path = f"{self.logging_path}/model"
