@@ -14,6 +14,7 @@ sweep:
   name: lbfgs-hyperparameter-curriculum-learning-sweep
   description: sampling-noise-lbfgs-sweep
   method: grid
+  count: 150
   parameters:
     scheduler:
       parameters:
@@ -100,10 +101,10 @@ model:
 
 optimizer:
   name: LBFGS
-  lr:
-  max_iter:
-  history_size:
-  line_search_fn:
+  lr: 1
+  max_iter: 10
+  history_size: 100
+  line_search_fn: strong_wolfe
 
 loss:
   name: ConvectionMSEPDELoss
@@ -111,4 +112,4 @@ loss:
   regularization: 1
 
 training:
-  epochs:
+  epochs: 250

@@ -62,7 +62,8 @@ if "sweep" in hyperparameters:
         project=hyperparameters["overview"]["project"],
         sweep=hyperparameters["sweep"],
     )
-    wandb.agent(sweep_id, function=learner.run)
+    wandb.agent(sweep_id, function=learner.run, count=hyperparameters["sweep"]["count"])
+    exit()
 
 
 print("* Starting curriculum learning")

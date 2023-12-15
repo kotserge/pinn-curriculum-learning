@@ -14,6 +14,7 @@ sweep:
   name: adam-hyperparameter-curriculum-learning-sweep
   description: sampling-noise-adam-sweep
   method: grid
+  count: 150
   parameters:
     scheduler:
       parameters:
@@ -100,8 +101,8 @@ model:
 
 optimizer:
   name: Adam
-  lr:
-  weight_decay:
+  lr: 0.001
+  weight_decay: 0
 
 loss:
   name: ConvectionMSEPDELoss
@@ -109,4 +110,4 @@ loss:
   regularization: 1
 
 training:
-  epochs:
+  epochs: 500
