@@ -1,7 +1,7 @@
 overview:
   entity: singing-kangaroo
   project: Curriculum Learning Convection Equation
-  group: SGD Hyperparameter Search for Optimizer
+  group: SGD Hyperparameter Search
   experiment: sgd-hyperparameter-curriculum-learning-sweep
   description: >
     SGD Optimizer Hyperparameter Sweep for Curriculum Learning
