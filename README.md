@@ -27,11 +27,11 @@ Note, the loss function differs from the paper, where only the initial condition
 
 ### Optimization
 
-We use three different optimizers; Adam, SGD and LBFGS. The hyperparameters for the optimizers are found using sweeps on some idealized experiments, where we sample 100 points from the domain and the noise is set to 0. The hyperparameters swept include learning rate and weight decay for Adam and SGD including the momentum parameter for SGD. For LBFGS we sweep the learning rate, max iterations and history size. The hyperparameters are swept using [Weights & Biases](https://wandb.ai/site) (WandB). The sweeps are defined in the `config` directory under `config/hyperparameter_search`.
+We use three different optimizers; Adam, SGD and LBFGS. The hyperparameters for the optimizers are found using sweeps on some idealized experiments, where we sample 100 points from the domain, the noise is set to 50, and each optimizer is given 250 epochs. The hyperparameters swept include learning rate and weight decay for Adam and SGD including the momentum parameter for SGD. For LBFGS we sweep the learning rate, max iterations and history size. The hyperparameters are swept using [Weights & Biases](https://wandb.ai/site) (WandB). The sweeps are defined in the `config` directory under `config/hyperparameter_search`.
 
 ### Experiments
 
-As the initial research question is the effect of sample size and noise in the training data, we run experiments with different sample sizes and noise levels. The experiments are defined in the `config` directory under `config/sampling-noise`. For the sample size we sweep over 10, 50, 100, 500, 1000 and 5000 samples. The samples are randomly sampled from the domain consisting of 10000 equidistant points. For the noise we use SNR values in dB of 0, 1, 2, 5, 10, 20, 50 and 100.
+As the initial research question is the effect of sample size and noise in the training data, we run experiments with different sample sizes and noise levels. The experiments are defined in the `config` directory under `config/sampling-noise`. For the sample size we sweep over 10, 50, 100, 500, 1000 and 5000 samples. The samples are randomly sampled from the domain consisting of 10000 equidistant points. For the noise we use SNR values in dB of 0 (no noise), 0.1, 0.5, 1, 2, 5, 10, 20, 30, 40, 50.
 For the sweep we use the optimal hyperparameters found in the hyperparameter search and use grid search to test all combinations of sample size and noise level (this is done multiple times to get a better estimate of the performance).
 
 ### Results

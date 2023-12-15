@@ -29,7 +29,7 @@ loss:
   regularization: 1
 
 scheduler:
-  end: 6
+  end: 0
   start: 0
   step: 1
 
@@ -39,13 +39,13 @@ scheduler:
       shuffle: False
       sampler:
         name: RandomSampler
-        replacement: True
+        replacement: False
         percent_samples: 0.1
       pde:
         convection: [1, 5, 10, 15, 20, 25, 30]
         l: 6.283185307179586
         n: 100
-        snr: 0
+        snr: 10
         t: 1
 
     validation:

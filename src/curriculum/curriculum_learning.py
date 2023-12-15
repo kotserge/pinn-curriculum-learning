@@ -73,7 +73,7 @@ class CurriculumLearning:
         self.evaluatorzz: Type[CurriculumEvaluator] = evaluatorzz
 
         # Hyperparameters
-        self.hyperparameters: dict = config
+        self.config: dict = config
         self.baseline: bool = not config["learning"]["curriculum"]
 
         # Logging

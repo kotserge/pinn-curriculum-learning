@@ -1,7 +1,7 @@
 overview:
   entity: singing-kangaroo
   project: Curriculum Learning Convection Equation
-  group: Hyperparameter Search for Optimizer; Curriculum Learning
+  group: L-BFGS Hyperparameter Search
   experiment: lbfgs-hyperparameter-curriculum-learning-sweep
   description: >
     LBFGS Optimizer Hyperparameter Sweep for Curriculum Learning
@@ -23,21 +23,23 @@ sweep:
         name:
           value: LBFGS
         lr:
-          values: [2, 1, 0.5, 0.1]
+          min: 0.01
+          max: 2
         max_iter:
           values: [5, 10, 20]
         history_size:
           values: [25, 50, 100]
         line_search_fn:
-          values: ["strong_wolfe", None]
+          value: strong_wolfe
     training:
       parameters:
         epochs:
-          values: [50, 100, 250, 500]
+          value: 250
 
 learning:
   device: cuda
   curriculum: True
+  count: 150
   # seed: 0
 
 model:
@@ -61,13 +63,13 @@ scheduler:
       shuffle: False
       sampler:
         name: RandomSampler
-        replacement: True
+        replacement: False
         num_samples: 100
       pde:
         convection: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
         l: 6.283185307179586
         n: 100
-        snr: 0
+        snr: 50
         t: 1
 
     validation:

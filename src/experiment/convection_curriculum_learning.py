@@ -104,7 +104,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             name=self._name,
             id=self._id,
             mode=run_mode,
-            config=self.hyperparameters,
+            config=self.config,
             resume="must" if self.kwargs["resume_path"] else None,
         )
 
@@ -118,29 +118,29 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         Returns:
             tuple: Parameters for wandb init function (entity, project, group, job_type, run_mode)
         """
-        assert "overview" in self.hyperparameters, "No overview in hyperparameters"
-        assert "entity" in self.hyperparameters["overview"], "No entity in overview"
-        assert "project" in self.hyperparameters["overview"], "No project in overview"
+        assert "overview" in self.config, "No overview in configuration"
+        assert "entity" in self.config["overview"], "No entity in overview"
+        assert "project" in self.config["overview"], "No project in overview"
 
-        entity = self.hyperparameters["overview"]["entity"]
-        project = self.hyperparameters["overview"]["project"]
+        entity = self.config["overview"]["entity"]
+        project = self.config["overview"]["project"]
 
         group = (
-            self.hyperparameters["overview"]["group"]
-            if "group" in self.hyperparameters["overview"]
+            self.config["overview"]["group"]
+            if "group" in self.config["overview"]
             else None
         )
 
         job_type = (
-            self.hyperparameters["overview"]["job_type"]
-            if "job_type" in self.hyperparameters["overview"]
+            self.config["overview"]["job_type"]
+            if "job_type" in self.config["overview"]
             else None
         )
 
         run_mode = (
-            self.hyperparameters["overview"]["run_mode"]
-            if "run_mode" in self.hyperparameters["overview"]
-            and self.hyperparameters["overview"]["run_mode"]
+            self.config["overview"]["run_mode"]
+            if "run_mode" in self.config["overview"]
+            and self.config["overview"]["run_mode"]
             else "disabled"
         )
 
@@ -150,7 +150,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
         """Helper function for setup, if this a new curriculum learning process."""
         # Model and Optimizer initialization
         self._id = wandb.util.generate_id()
-        self._name = self.hyperparameters["overview"]["experiment"] + "-" + self._id
+        self._name = self.config["overview"]["experiment"] + "-" + self._id
 
         # Table logging
         self.logging_dict["Epoch Loss"] = wandb.Table(
@@ -166,7 +166,7 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
 
         # Model and Optimizer state restoration
         torch.manual_seed(state_dict["Seed"])
-        self.hyperparameters["learning"]["seed"] = state_dict["Seed"]
+        self.config["learning"]["seed"] = state_dict["Seed"]
         self.model.load_state_dict(state_dict["Model State Dict"])
         self.optimizer.load_state_dict(state_dict["Optimizer State Dict"])
 
@@ -447,46 +447,31 @@ class ConvectionEquationTrainer(curriculum.CurriculumTrainer):
         self.model.train()
         self.optimizer.zero_grad()
 
-        # Check, if stopping condition should be evaluated
-        eval_stopping_condition = "stopping" in wandb.config["training"]
+        # Step 0 - Get Data samples
+        data_inputs, data_labels = next(iter(self.train_data_loader))
+
+        # Step 1 - Move to device
+        data_inputs, data_labels = data_inputs.to(self.device).to(
+            torch.float64
+        ), data_labels.to(self.device).to(torch.float64)
+
+        # Step 2 - Change the data input and move to closure help variables
+        x, t = data_inputs[:, 0].unsqueeze(1), data_inputs[:, 1].unsqueeze(1)
+        self.closure_x, self.closure_t, self.closure_y = x, t, data_labels
 
         # Epoch loop
         for epoch in tqdm(range(wandb.config["training"]["epochs"]), miniters=0):
-            # Epoch loss aggregator
-            epoch_loss_aggregation = 0.0
+            # Step 3 - Optimize the model parameters
+            self._batch_loss = self._optimize()
 
-            # Batch loop
-            for batch, (data_inputs, data_labels) in enumerate(self.train_data_loader):
-                ## Step 1 - Move input data to device
-                data_inputs, data_labels = data_inputs.to(self.device).to(
-                    torch.float64
-                ), data_labels.to(self.device).to(torch.float64)
-
-                # Step 2 - Change the data input and move to closure help variables
-                x, t = data_inputs[:, 0].unsqueeze(1), data_inputs[:, 1].unsqueeze(1)
-                self.closure_x, self.closure_t, self.closure_y = x, t, data_labels
-
-                ## Step 3 - Optimize the model parameters
-                self._batch_loss = self._optimize()
-
-                # Step 4 - Accumulate loss for batches in current epoch
-                epoch_loss_aggregation += self._batch_loss.item()
-
-            # Step 5 - Epoch logging
+            # Step 4 - Logging
             self.logging_dict["Epoch Loss"].add_data(
-                self.curriculum_step, epoch, epoch_loss_aggregation
+                self.curriculum_step, epoch, self._batch_loss.item()
             )
 
-            if (
-                eval_stopping_condition and self.stopping_condition()
-            ) or self._batch_loss.item() > 1e10:
+            # Step 5 - Check early stopping
+            if self._batch_loss.item() > 1e10:
                 break
-
-        # Step 6 - Early stopping logging
-        self.logging_dict["Early Stopping Hit"].add_data(
-            self.curriculum_step,
-            (epoch + 1) / wandb.config["training"]["epochs"],
-        )
 
 
 # --- Evaluator ---

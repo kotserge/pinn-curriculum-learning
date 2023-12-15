@@ -11,10 +11,9 @@ overview:
   run_mode: online
 
 sweep:
-  name: adam-hyperparameter-curriculum-learning-sweep
-  description: sampling-noise-adam-sweep
+  name: sampling-noise-adam-sweep
+  description: Sample Size and Sample Noise Sweep for Convection Equation using Adam Optimizer
   method: grid
-  count: 150
   parameters:
     scheduler:
       parameters:
@@ -37,7 +36,7 @@ sweep:
                     name:
                       value: RandomSampler
                     replacement:
-                      value: True
+                      value: False
                     num_samples:
                       values: [10, 50, 100, 500, 1000, 5000]
                 pde:
@@ -49,7 +48,7 @@ sweep:
                     n:
                       value: 100
                     snr:
-                      values: [0, 1, 2, 5, 10, 20, 50, 100]
+                      values: [0, 0.1, 0.5, 1, 2, 5, 10, 20, 30, 40, 50]
                     t:
                       value: 1
             validation:
@@ -110,4 +109,4 @@ loss:
   regularization: 1
 
 training:
-  epochs: 500
+  epochs: 250
