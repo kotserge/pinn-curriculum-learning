@@ -35,7 +35,7 @@ class CurriculumLearning:
         schedulerzz: Type[CurriculumScheduler],
         trainerzz: Type[CurriculumTrainer],
         evaluatorzz: Type[CurriculumEvaluator],
-        hyperparameters: dict,
+        config: dict,
         logging_path: Optional[str] = None,
         logging_dict: dict = None,
         device: str = (
@@ -52,7 +52,7 @@ class CurriculumLearning:
             schedulerzz (CurriculumScheduler): The scheduler class to be used.
             trainerzz (Type[CurriculumTrainer]): The trainer class to be used.
             evaluatorzz (Type[CurriculumEvaluator]): The evaluator class to be used.
-            hyperparameters (dict): Hyperparameters of the whole curriculum learning process.
+            config (dict): Hyperparameters of the whole curriculum learning process.
             logging_path (str, optional): Path to the logging directory. Defaults to None.
             logging_dict (dict, optional): Dictionary containing the logging information. Defaults to None.
             device (str, optional): On which device the process should be run. Defaults to "cuda" if available, otherwise "cpu".
@@ -73,8 +73,8 @@ class CurriculumLearning:
         self.evaluatorzz: Type[CurriculumEvaluator] = evaluatorzz
 
         # Hyperparameters
-        self.hyperparameters: dict = hyperparameters
-        self.baseline: bool = not hyperparameters["learning"]["curriculum"]
+        self.hyperparameters: dict = config
+        self.baseline: bool = not config["learning"]["curriculum"]
 
         # Logging
         self.logging_path: Optional[str] = logging_path
@@ -100,8 +100,9 @@ class CurriculumLearning:
         """
 
         self.scheduler = self.schedulerzz(
-            config=self.hyperparameters,
+            config=self.config,
             **self.kwargs,
+            kwargs=kwargs,
         )
 
     def curriculum_step_preprocessing(self, **kwargs) -> None:
@@ -127,10 +128,11 @@ class CurriculumLearning:
             train_data_loader=self.latest_tdata_loader,
             validation_data_loader=self.latest_vdata_loader,
             curriculum_step=self.scheduler.curriculum_step,
-            config=self.hyperparameters,
+            config=self.config,
             device=self.device,
             logging_path=self.logging_path,
             logging_dict=self.logging_dict,
+            kwargs=kwargs,
         )
 
         self.evaluator = self.evaluatorzz(
@@ -138,10 +140,11 @@ class CurriculumLearning:
             loss=self.loss,
             data_loader=self.latest_edata_loader,
             curriculum_step=self.scheduler.curriculum_step,
-            config=self.hyperparameters,
+            config=self.config,
             device=self.device,
             logging_path=self.logging_path,
             logging_dict=self.logging_dict,
+            kwargs=kwargs,
         )
 
     def curriculum_step_postprocessing(self, **kwargs) -> None:

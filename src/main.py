@@ -2,12 +2,6 @@ import sys
 import yaml
 
 import wandb
-
-import torch
-from torch import optim
-
-import model
-import loss
 import experiment
 
 resume_path = None
@@ -48,7 +42,7 @@ learner = experiment.ConvectiveCurriculumLearning(
     schedulerzz=experiment.ConvectionCurriculumScheduler,
     trainerzz=experiment.ConvectionEquationTrainer,
     evaluatorzz=experiment.ConvectionEquationEvaluator,
-    hyperparameters=hyperparameters,
+    config=hyperparameters,
     resume_path=resume_path,
     device=hyperparameters["learning"]["device"],
 )

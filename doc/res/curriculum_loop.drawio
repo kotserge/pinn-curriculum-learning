@@ -1,79 +1,91 @@
-<mxfile host="app.diagrams.net" modified="2023-12-01T10:40:56.302Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0" etag="zQ9ToS5qB3kGcYNcRKjf" version="22.1.5" type="device">
+<mxfile host="app.diagrams.net" modified="2023-12-15T12:08:36.367Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0" etag="jVeamEUhm3pV-QdFfpo2" version="22.1.9" type="device">
   <diagram name="Page-1" id="Y-dkQmM2y4cFOkp-MA5m">
-    <mxGraphModel dx="1432" dy="696" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1742" dy="854" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-4" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="120" y="280" width="120" height="80" as="geometry" />
+        <mxCell id="4U5hQ_e24mgaDOtEDBLK-4" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="310" width="120" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-5" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="260" y="280" width="120" height="80" as="geometry" />
+        <mxCell id="4U5hQ_e24mgaDOtEDBLK-5" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="310" width="120" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-6" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="400" y="280" width="120" height="80" as="geometry" />
+        <mxCell id="4U5hQ_e24mgaDOtEDBLK-6" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="400" y="310" width="120" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-7" value="&lt;h3&gt;Model&lt;/h3&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="150" y="305" width="60" height="30" as="geometry" />
+        <mxCell id="4U5hQ_e24mgaDOtEDBLK-7" value="&lt;h3&gt;Model&lt;/h3&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="110" y="335" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-8" value="&lt;h3&gt;Optimizer&lt;/h3&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="290" y="305" width="60" height="30" as="geometry" />
+        <mxCell id="4U5hQ_e24mgaDOtEDBLK-8" value="&lt;h3&gt;Optimizer&lt;/h3&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="270" y="335" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-9" value="&lt;h3&gt;Loss&lt;/h3&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="430" y="305" width="60" height="30" as="geometry" />
+        <mxCell id="4U5hQ_e24mgaDOtEDBLK-9" value="&lt;h3&gt;Loss&lt;/h3&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="430" y="335" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-14" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="120" y="400" width="400" height="100" as="geometry" />
+        <mxCell id="4U5hQ_e24mgaDOtEDBLK-14" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="400" width="600" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-15" value="&lt;h2&gt;Curriculum Learning&lt;br&gt;&lt;/h2&gt;&lt;p&gt;Overarching loop, which takes in the model, optimizer and loss (parameterized) and starts the curriculum learning process.&lt;br&gt;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="130" y="410" width="380" height="80" as="geometry" />
+        <mxCell id="4U5hQ_e24mgaDOtEDBLK-15" value="&lt;h2&gt;Curriculum Learning&lt;br&gt;&lt;/h2&gt;&lt;p&gt;Overarching loop, which takes in the model, optimizer and loss (parameterized) and starts the curriculum learning process.&lt;br&gt;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="90" y="410" width="550" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-17" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="160" y="520" width="360" height="100" as="geometry" />
+        <mxCell id="4U5hQ_e24mgaDOtEDBLK-17" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="120" y="520" width="560" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-18" value="&lt;h2&gt;Curriculum Scheduler&lt;br&gt;&lt;/h2&gt;&lt;p&gt;Controls and provides the data and parameters for each curriculum learning step.&lt;br&gt;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="170" y="530" width="340" height="80" as="geometry" />
-        </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-19" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="160" y="640" width="360" height="100" as="geometry" />
-        </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-20" value="&lt;h2&gt;Curriculum Trainer&lt;br&gt;&lt;/h2&gt;&lt;p&gt;Provides the training step for each curriculum step.&lt;br&gt;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="170" y="650" width="340" height="80" as="geometry" />
-        </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-21" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="160" y="760" width="360" height="100" as="geometry" />
-        </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-22" value="&lt;h2&gt;Curriculum Evaluator&lt;br&gt;&lt;/h2&gt;&lt;p&gt;Provides the evaluation step for each curriculum step.&lt;br&gt;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="170" y="770" width="340" height="80" as="geometry" />
-        </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-27" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0.007;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="4U5hQ_e24mgaDOtEDBLK-4" target="4U5hQ_e24mgaDOtEDBLK-14">
+        <mxCell id="4U5hQ_e24mgaDOtEDBLK-30" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="460" y="570" as="sourcePoint" />
-            <mxPoint x="510" y="520" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-28" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0.007;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="319.89" y="359" as="sourcePoint" />
-            <mxPoint x="319.89" y="400" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-29" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0.007;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="459.89" y="359" as="sourcePoint" />
-            <mxPoint x="459.89" y="400" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="4U5hQ_e24mgaDOtEDBLK-30" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="150" y="530" as="sourcePoint" />
-            <mxPoint x="150" y="530" as="targetPoint" />
+            <mxPoint x="130" y="950" as="sourcePoint" />
+            <mxPoint x="130" y="950" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="150" y="850" />
-              <mxPoint x="130" y="850" />
-              <mxPoint x="130" y="530" />
+              <mxPoint x="130" y="650" />
+              <mxPoint x="150" y="650" />
+              <mxPoint x="150" y="950" />
             </Array>
           </mxGeometry>
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-4" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="310" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-5" value="&lt;h3&gt;Configuration&lt;/h3&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="590" y="335" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-7" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="570" width="560" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-8" value="&lt;h2&gt;Curriculum Scheduler&lt;br&gt;&lt;/h2&gt;&lt;p&gt;Controls and provides the data and parameters for each curriculum learning step.&lt;br&gt;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="130" y="580" width="510" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-10" value="&lt;font size=&quot;1&quot;&gt;&lt;b style=&quot;font-size: 16px;&quot;&gt;Initializer&lt;/b&gt;&lt;/font&gt; Initializes the appropriate modules with the given configuration." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="135" y="525" width="490" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-11" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="670" width="520" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-12" value="&lt;font size=&quot;1&quot;&gt;&lt;b style=&quot;font-size: 16px;&quot;&gt;Pre-Processing&lt;/b&gt;&lt;/font&gt;&amp;nbsp; Allows configuration of the current curriculum step." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="175" y="675" width="490" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-15" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="720" width="520" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-16" value="&lt;h2&gt;Curriculum Trainer&lt;br&gt;&lt;/h2&gt;&lt;p&gt;Provides the training step for each curriculum step.&lt;br&gt;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="170" y="730" width="490" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-18" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="810" width="520" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-19" value="&lt;h2&gt;Curriculum Evaluator&lt;br&gt;&lt;/h2&gt;&lt;p&gt;Provides the evaluation step for each curriculum step.&lt;br&gt;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="170" y="820" width="490" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-20" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="900" width="520" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-21" value="&lt;font size=&quot;1&quot;&gt;&lt;b style=&quot;font-size: 16px;&quot;&gt;Post-Processing&lt;/b&gt;&lt;/font&gt; Allows to take action before the next curriculum step.&amp;nbsp; " style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="175" y="905" width="490" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-22" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="960" width="560" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="MmQ4SgX1ukYeqsRFTVWf-23" value="&lt;font size=&quot;1&quot;&gt;&lt;b style=&quot;font-size: 16px;&quot;&gt;Finalizer&lt;/b&gt;&lt;/font&gt; Allows to take action before the curriculum learning process exits." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="135" y="965" width="490" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
