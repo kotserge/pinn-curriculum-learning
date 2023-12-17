@@ -1,7 +1,7 @@
 overview:
   entity: singing-kangaroo
   project: Curriculum Learning Convection Equation
-  group: Sample Size and Noise Sweep; L-BFGS Optimizer
+  group: Sample Size and Noise Sweep with L-BFGS Optimizer
   experiment: sampling-noise-lbfgs-sweep
   description: >
     Sample Size and Sample Noise Sweep for Convection Equation
@@ -14,7 +14,6 @@ sweep:
   name: sampling-noise-lbfgs-sweep
   description: Sample Size and Sample Noise Sweep for Convection Equation using L-BFGS Optimizer
   method: grid
-  count: 150
   parameters:
     scheduler:
       parameters:
@@ -39,7 +38,7 @@ sweep:
                     replacement:
                       value: False
                     num_samples:
-                      values: [10, 50, 100, 500, 1000, 5000]
+                      values: [50, 100, 250, 500, 1000]
                 pde:
                   parameters:
                     convection:
@@ -49,7 +48,7 @@ sweep:
                     n:
                       value: 100
                     snr:
-                      values: [0, 0.1, 0.5, 1, 2, 5, 10, 20, 30, 40, 50]
+                      values: [0, 0.1, 1, 5, 10, 20, 30, 40]
                     t:
                       value: 1
             validation:
@@ -103,7 +102,7 @@ optimizer:
   name: LBFGS
   lr: 1
   max_iter: 10
-  history_size: 100
+  history_size: 50
   line_search_fn: strong_wolfe
 
 loss:

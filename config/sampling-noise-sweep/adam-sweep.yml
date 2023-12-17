@@ -1,7 +1,7 @@
 overview:
   entity: singing-kangaroo
   project: Curriculum Learning Convection Equation
-  group: Sample Size and Noise Sweep; Adam Optimizer
+  group: Sample Size and Noise Sweep with Adam Optimizer
   experiment: sampling-noise-adam-sweep
   description: >
     Sample Size and Sample Noise Sweep for Convection Equation
@@ -38,7 +38,7 @@ sweep:
                     replacement:
                       value: False
                     num_samples:
-                      values: [10, 50, 100, 500, 1000, 5000]
+                      values: [50, 100, 250, 500, 1000]
                 pde:
                   parameters:
                     convection:
@@ -48,7 +48,7 @@ sweep:
                     n:
                       value: 100
                     snr:
-                      values: [0, 0.1, 0.5, 1, 2, 5, 10, 20, 30, 40, 50]
+                      values: [0, 0.1, 1, 5, 10, 20, 30, 40]
                     t:
                       value: 1
             validation:
@@ -100,8 +100,8 @@ model:
 
 optimizer:
   name: Adam
-  lr: 0.001
-  weight_decay: 0
+  lr: 0.0025
+  weight_decay: 0.0005
 
 loss:
   name: ConvectionMSEPDELoss
