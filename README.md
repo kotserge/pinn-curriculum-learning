@@ -12,7 +12,7 @@ The model is implemented in PyTorch. The model is a fully connected neural netwo
 
 ### PDE
 
-The PDE in the initial experiments is the [Convection–Diffusion Equation](https://en.wikipedia.org/wiki/Convection%E2%80%93diffusion_equation) (CDE) with no diffusion term, a scalar convection term and sine wave as the boundary condition.
+The PDE in the initial experiments is the [Convection–Diffusion Equation](https://en.wikipedia.org/wiki/Convection%E2%80%93diffusion_equation) (CDE) with no diffusion term and a scalar convection term with a continuous boundary as well as a sine wave as the initial condition.
 
 ### Loss Function
 

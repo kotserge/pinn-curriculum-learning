@@ -45,12 +45,12 @@ Our aim is to build on their work, specifically on the curriculum learning appro
 Fully connected neural network with <mark>3 hidden layers and 50 neurons per layer</mark>. The <mark>activation function</mark> is the <mark>hyperbolic tangent</mark> function. The input of the network is the spatial coordinate $x$ and temporal coordinate $t$. The output of the network is $u(x, t)$. <span style="font-size: 0.6em"> (Similar to paper, but with 3 hidden layers instead of 2)</span>
 
 #### PDE
-The PDE in the initial experiments is the <mark>Convection–Diffusion Equation</mark> with no diffusion term, a scalar convection term and sine wave as the boundary condition. <span style="font-size: 0.6em"> (Same as in paper) </span>
+The PDE in the initial experiments is the <mark>Convection–Diffusion Equation</mark> with no diffusion term and a  <mark>scalar convection</mark> term with a <mark>continuous boundary</mark> as well as a <mark>sine wave</mark> as the <mark>initial condition</mark>. <span style="font-size: 0.6em"> (Same as in paper) </span>
 
 ---
 
 #### Loss Function
-The loss function is the <mark>mean squared error (MSE)</mark> between the <mark>predicted and the actual value of the PDE</mark> and the PDE itself. The loss function is defined as follows:
+The loss function is the <mark>mean squared error (MSE)</mark> between the predicted and the actual value of the PDE and the <mark>PDE itself</mark>. The loss function is defined as follows:
 
 $$
 \mathcal{L}(\hat u, u \mid \theta) = \mathcal{L}_{\text{PDE}}(\hat u \mid \theta) + \mathcal{L}_{\text{MSE}}(\hat u, u \mid \theta)
@@ -66,11 +66,11 @@ The loss function differs from the paper, where the initial condition, boundary 
 
 ### Step 1: Hyperparameter Search
 
-As our goal is to investigate the <mark>effects of sampling size and noise</mark> in the training data, the <mark>models used should be as optimal</mark> as possible. Therefore, we first find optimal hyperparameters for the optimizers. 
+As our goal is to investigate the effects of sampling size and noise in the training data, the <mark>models used should be as optimal</mark> as possible. Therefore, we first <mark>find optimal hyperparameters</mark> for the optimizers. 
 
 ### Step 2: Sample Size and Noise Sweep
 
-Using the optimal hyperparameters, we vary the sample size and noise to see how they affect the performance of PINNs with curriculum learning.
+Using the <mark>optimal hyperparameters</mark>, we <mark>vary the sample size and noise</mark> to see how they affect the performance of PINNs with curriculum learning.
 
 ---
 
@@ -107,9 +107,9 @@ Using the optimal hyperparameters, we vary the sample size and noise to see how 
 
 ## Step 2: Sample Size and Noise Sweep
 
-Sample size influences the performance of PINNs, as a <mark>higher sample size</mark> allows for a possible <mark>higher resolution of the domain</mark> the corresponding <mark>model will train on</mark> (recall slide 4). Thus, increasing the sample size should increase the performance of the model, but also increase the training resources needed. Hence, we choose to investigate <mark>sample sizes of 50, 100, 250, 500 and 1000</mark>.
+Sample size influences the performance of PINNs, as a <mark>higher sample size</mark> allows for a possible <mark>higher resolution of the domain</mark> the corresponding <mark>model will train on</mark> (recall slide 4). Thus, increasing the sample size should <mark>increase the performance</mark> of the model, but also increase the training resources needed. Hence, we choose to investigate <mark>sample sizes of 50, 100, 250, 500 and 1000</mark>.
 
-Noise in the training data is naturally occurring problem (e.g. faulty sensors, measurement errors, etc.). We model this noise by adding <mark>Gaussian noise modeled by the signal-to-noise ratio (SNR)</mark> to the training data. We choose to investigate <mark>SNRs of 0.1, 1, 5, 10, 20, 30, 40</mark>.
+<mark>Noise</mark> in the training data is <mark>naturally occurring</mark> problem (e.g. faulty sensors, measurement errors, etc.). We model this noise by adding <mark>Gaussian noise modeled by the signal-to-noise ratio (SNR)</mark> to the training data. We choose to investigate <mark>SNRs of 0.1, 1, 5, 10, 20, 30, 40</mark>.
 
 <span style="font-size: 0.6em"> Naturally, we expect with increasing noise, that more samples are needed to achieve the same performance. </span>
 
