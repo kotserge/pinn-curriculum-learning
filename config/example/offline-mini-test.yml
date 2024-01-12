@@ -25,11 +25,12 @@ optimizer:
 
 loss:
   name: ConvectionMSEPDELoss
-  convection: [1, 5, 10, 15, 20, 25, 30]
+  convection: [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
+
   regularization: 1
 
 scheduler:
-  end: 0
+  end: 15
   start: 0
   step: 1
 
@@ -42,7 +43,7 @@ scheduler:
         replacement: False
         percent_samples: 0.1
       pde:
-        convection: [1, 5, 10, 15, 20, 25, 30]
+        convection: [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
         l: 6.283185307179586
         n: 100
         snr: 10
@@ -52,7 +53,7 @@ scheduler:
       batch_size: full
       shuffle: False
       pde:
-        convection: [1, 5, 10, 15, 20, 25, 30]
+        convection: [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
         l: 6.283185307179586
         n: 100
         snr: 0
@@ -62,7 +63,7 @@ scheduler:
       batch_size: full
       shuffle: False
       pde:
-        convection: [1, 5, 10, 15, 20, 25, 30]
+        convection: [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
         l: 6.283185307179586
         n: 100
         snr: 0

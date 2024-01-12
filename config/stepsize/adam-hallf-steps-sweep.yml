@@ -1,0 +1,360 @@
+overview:
+  entity: singing-kangaroo
+  project: Curriculum Learning Convection Equation
+  group: Sample Size and Noise Sweep with Adam Optimizer Half Steps
+  experiment: sampling-noise-adam-half-steps-sweep
+  description: >
+    Sample Size and Sample Noise Sweep for Convection Equation
+    using Adam Optimizer, Curriculum Learning with half steps and
+    Random Sampler with replacement.
+  version: v0.0.1
+  run_mode: online
+
+sweep:
+  name: sampling-noise-adam-half-steps-sweep
+  description: Sample Size and Sample Noise Sweep for Convection Equation with half steps using Adam Optimizer
+  method: grid
+  parameters:
+    scheduler:
+      parameters:
+        start:
+          value: 0
+        end:
+          value: 59
+        step:
+          value: 1
+        data:
+          parameters:
+            train:
+              parameters:
+                batch_size:
+                  value: full
+                shuffle:
+                  value: False
+                sampler:
+                  parameters:
+                    name:
+                      value: RandomSampler
+                    replacement:
+                      value: False
+                    num_samples:
+                      values: [50, 100, 250, 500, 1000]
+                pde:
+                  parameters:
+                    convection:
+                      value:
+                        [
+                          0.5,
+                          1,
+                          1.5,
+                          2,
+                          2.5,
+                          3,
+                          3.5,
+                          4,
+                          4.5,
+                          5,
+                          5.5,
+                          6,
+                          6.5,
+                          7,
+                          7.5,
+                          8,
+                          8.5,
+                          9,
+                          9.5,
+                          10,
+                          10.5,
+                          11,
+                          11.5,
+                          12,
+                          12.5,
+                          13,
+                          13.5,
+                          14,
+                          14.5,
+                          15,
+                          15.5,
+                          16,
+                          16.5,
+                          17,
+                          17.5,
+                          18,
+                          18.5,
+                          19,
+                          19.5,
+                          20,
+                          20.5,
+                          21,
+                          21.5,
+                          22,
+                          22.5,
+                          23,
+                          23.5,
+                          24,
+                          24.5,
+                          25,
+                          25.5,
+                          26,
+                          26.5,
+                          27,
+                          27.5,
+                          28,
+                          28.5,
+                          29,
+                          29.5,
+                          30,
+                        ]
+                    l:
+                      value: 6.283185307179586
+                    n:
+                      value: 100
+                    snr:
+                      values: [0, 0.1, 1, 5, 10, 20, 30, 40]
+                    t:
+                      value: 1
+            validation:
+              parameters:
+                batch_size:
+                  value: full
+                shuffle:
+                  value: False
+                pde:
+                  parameters:
+                    convection:
+                      value:
+                        [
+                          0.5,
+                          1,
+                          1.5,
+                          2,
+                          2.5,
+                          3,
+                          3.5,
+                          4,
+                          4.5,
+                          5,
+                          5.5,
+                          6,
+                          6.5,
+                          7,
+                          7.5,
+                          8,
+                          8.5,
+                          9,
+                          9.5,
+                          10,
+                          10.5,
+                          11,
+                          11.5,
+                          12,
+                          12.5,
+                          13,
+                          13.5,
+                          14,
+                          14.5,
+                          15,
+                          15.5,
+                          16,
+                          16.5,
+                          17,
+                          17.5,
+                          18,
+                          18.5,
+                          19,
+                          19.5,
+                          20,
+                          20.5,
+                          21,
+                          21.5,
+                          22,
+                          22.5,
+                          23,
+                          23.5,
+                          24,
+                          24.5,
+                          25,
+                          25.5,
+                          26,
+                          26.5,
+                          27,
+                          27.5,
+                          28,
+                          28.5,
+                          29,
+                          29.5,
+                          30,
+                        ]
+                    l:
+                      value: 6.283185307179586
+                    n:
+                      value: 1
+                    snr:
+                      value: 0
+                    t:
+                      value: 1
+            test:
+              parameters:
+                batch_size:
+                  value: full
+                shuffle:
+                  value: False
+                pde:
+                  parameters:
+                    convection:
+                      value:
+                        [
+                          0.5,
+                          1,
+                          1.5,
+                          2,
+                          2.5,
+                          3,
+                          3.5,
+                          4,
+                          4.5,
+                          5,
+                          5.5,
+                          6,
+                          6.5,
+                          7,
+                          7.5,
+                          8,
+                          8.5,
+                          9,
+                          9.5,
+                          10,
+                          10.5,
+                          11,
+                          11.5,
+                          12,
+                          12.5,
+                          13,
+                          13.5,
+                          14,
+                          14.5,
+                          15,
+                          15.5,
+                          16,
+                          16.5,
+                          17,
+                          17.5,
+                          18,
+                          18.5,
+                          19,
+                          19.5,
+                          20,
+                          20.5,
+                          21,
+                          21.5,
+                          22,
+                          22.5,
+                          23,
+                          23.5,
+                          24,
+                          24.5,
+                          25,
+                          25.5,
+                          26,
+                          26.5,
+                          27,
+                          27.5,
+                          28,
+                          28.5,
+                          29,
+                          29.5,
+                          30,
+                        ]
+                    l:
+                      value: 6.283185307179586
+                    n:
+                      value: 100
+                    snr:
+                      value: 0
+                    t:
+                      value: 1
+
+learning:
+  device: cuda
+  curriculum: True
+  # seed: 0
+
+model:
+  name: ConvectionPINNModel
+  input_dim: 2
+  hidden_dim: 50
+
+optimizer:
+  name: Adam
+  lr: 0.0025
+  weight_decay: 0.0005
+
+loss:
+  name: ConvectionMSEPDELoss
+  convection:
+    [
+      0.5,
+      1,
+      1.5,
+      2,
+      2.5,
+      3,
+      3.5,
+      4,
+      4.5,
+      5,
+      5.5,
+      6,
+      6.5,
+      7,
+      7.5,
+      8,
+      8.5,
+      9,
+      9.5,
+      10,
+      10.5,
+      11,
+      11.5,
+      12,
+      12.5,
+      13,
+      13.5,
+      14,
+      14.5,
+      15,
+      15.5,
+      16,
+      16.5,
+      17,
+      17.5,
+      18,
+      18.5,
+      19,
+      19.5,
+      20,
+      20.5,
+      21,
+      21.5,
+      22,
+      22.5,
+      23,
+      23.5,
+      24,
+      24.5,
+      25,
+      25.5,
+      26,
+      26.5,
+      27,
+      27.5,
+      28,
+      28.5,
+      29,
+      29.5,
+      30,
+    ]
+  regularization: 1
+
+training:
+  epochs: 250

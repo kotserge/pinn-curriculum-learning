@@ -1,0 +1,114 @@
+overview:
+  entity: singing-kangaroo
+  project: Curriculum Learning Convection Equation
+  group: Sample Size and Noise Sweep with L-BFGS Optimizer Low LR
+  experiment: sampling-noise-lbfgs-low-lr-sweep
+  description: >
+    Sample Size and Sample Noise Sweep for Convection Equation
+    using L-BFGS Optimizer with low LR, Curriculum Learning and
+    Random Sampler with replacement.
+  version: v0.0.1
+  run_mode: online
+
+sweep:
+  name: sampling-noise-lbfgs-low-lr-sweep
+  description: Sample Size and Sample Noise Sweep for Convection Equation using L-BFGS Optimizer with low LR
+  method: grid
+  parameters:
+    scheduler:
+      parameters:
+        start:
+          value: 0
+        end:
+          value: 29
+        step:
+          value: 1
+        data:
+          parameters:
+            train:
+              parameters:
+                batch_size:
+                  value: full
+                shuffle:
+                  value: False
+                sampler:
+                  parameters:
+                    name:
+                      value: RandomSampler
+                    replacement:
+                      value: False
+                    num_samples:
+                      values: [50, 100, 250, 500, 1000]
+                pde:
+                  parameters:
+                    convection:
+                      value: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+                    l:
+                      value: 6.283185307179586
+                    n:
+                      value: 100
+                    snr:
+                      values: [0, 0.1, 1, 5, 10, 20, 30, 40]
+                    t:
+                      value: 1
+            validation:
+              parameters:
+                batch_size:
+                  value: full
+                shuffle:
+                  value: False
+                pde:
+                  parameters:
+                    convection:
+                      value: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+                    l:
+                      value: 6.283185307179586
+                    n:
+                      value: 1
+                    snr:
+                      value: 0
+                    t:
+                      value: 1
+            test:
+              parameters:
+                batch_size:
+                  value: full
+                shuffle:
+                  value: False
+                pde:
+                  parameters:
+                    convection:
+                      value: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+                    l:
+                      value: 6.283185307179586
+                    n:
+                      value: 100
+                    snr:
+                      value: 0
+                    t:
+                      value: 1
+
+learning:
+  device: cuda
+  curriculum: True
+  # seed: 0
+
+model:
+  name: ConvectionPINNModel
+  input_dim: 2
+  hidden_dim: 50
+
+optimizer:
+  name: LBFGS
+  lr: 0.15
+  max_iter: 10
+  history_size: 100
+  line_search_fn: strong_wolfe
+
+loss:
+  name: ConvectionMSEPDELoss
+  convection: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+  regularization: 1
+
+training:
+  epochs: 250

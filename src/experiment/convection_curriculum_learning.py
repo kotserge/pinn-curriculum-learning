@@ -211,6 +211,11 @@ class ConvectiveCurriculumLearning(curriculum.CurriculumLearning):
             wandb.config["optimizer"], self.model
         )
 
+        # Preparation for baseline training (i.e. model is reset to initial state after each curriculum step)
+        if self.baseline:
+            self.init_model_state_dict = self.model.state_dict()
+            self.init_optimizer_state_dict = self.optimizer.state_dict()
+
     def curriculum_step_preprocessing(self, **kwargs) -> None:
         """initialization of the loss module."""
         # Initialize loss module
