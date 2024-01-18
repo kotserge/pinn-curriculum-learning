@@ -34,8 +34,8 @@ def comparison_plot(
         origin="lower",
     )
     axes[0].set_title(params["title"]["ground_truth"])
-    axes[0].set_xlabel("t")
-    axes[0].set_ylabel("x")
+    axes[0].set_xlabel("x")
+    axes[0].set_ylabel("t")
 
     axes[1].imshow(
         prediction,
@@ -45,8 +45,8 @@ def comparison_plot(
         origin="lower",
     )
     axes[1].set_title(params["title"]["prediction"])
-    axes[1].set_xlabel("t")
-    axes[1].set_ylabel("x")
+    axes[1].set_xlabel("x")
+    axes[1].set_ylabel("t")
 
     fig.tight_layout()
     if "savefig_path" in params:
@@ -67,7 +67,7 @@ if __name__ == "__main__":
             },
             "data": {
                 "grid": 50,
-                "extent": [0, 1, 0, 2 * np.pi],
+                "extent": [0, 2 * np.pi, 0, 1],
             },
             "savefig_path": f"./results_{time.time()}.png",
         },

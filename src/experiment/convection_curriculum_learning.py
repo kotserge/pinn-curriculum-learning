@@ -561,9 +561,9 @@ class ConvectionEquationEvaluator(curriculum.CurriculumEvaluator):
                     "grid": wandb.config["scheduler"]["data"]["test"]["pde"]["n"],
                     "extent": [
                         0,
-                        wandb.config["scheduler"]["data"]["test"]["pde"]["t"],
-                        0,
                         wandb.config["scheduler"]["data"]["test"]["pde"]["l"],
+                        0,
+                        wandb.config["scheduler"]["data"]["test"]["pde"]["t"],
                     ],
                 },
                 "savefig_path": f"{self.logging_path}/images/results_convection_curriculum_{self.curriculum_step}.png",
