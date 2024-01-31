@@ -8,7 +8,7 @@ This project aims to reproduce the results of the paper as well as investigate t
 
 ### Model
 
-The model is implemented in PyTorch. The model is a fully connected neural network with 3 hidden layers and 50 neurons per layer. The activation function is the hyperbolic tangent function. The input of the network is the spatial coordinate $`x`$ and temporal coordinate $`t`$. The output of the network is $`u(x, t)`$.
+The model is implemented in PyTorch. The model is a fully connected neural network with 3 hidden layers and 50 neurons per layer. The activation function is the hyperbolic tangent function. The input of the network is the spatial coordinate $`x`$ and temporal coordinate $`t`$. The output of the network is $` \hat u(x, t)`$.
 
 ### PDE
 
@@ -16,13 +16,15 @@ The PDE in the initial experiments is the [Convection–Diffusion Equation](http
 
 ### Loss Function
 
-The loss function is the mean squared error (MSE) between the predicted and the actual value of the PDE and the PDE itself. The loss function is defined as follows:
+The loss function is the mean squared error (MSE) between the predicted and the actual value and the PDE . The loss function is given by
 
 ```math 
-\mathcal{L}(\hat u, u \mid \theta) = \mathcal{L}_{\text{PDE}}(\hat u \mid \theta) + \mathcal{L}_{\text{MSE}}(\hat u, u \mid \theta)
+    \text{MSE}}(\hat u, u \mid \theta) \\
+    \mathcal{L}_{\text{PDE}}(\hat u \mid \theta) &= \frac{\partial \hat u}{\partial t} + c \frac{\partial \hat u}{\partial x}\\
+    \mathcal{L}_{\text{MSE}}(\hat u, u \mid \theta) &= \frac{1}{n}\sum^n_{i=1}(\hat{u}(x_i, t_i) - u(x_i, t_i))^2
 ```
 
-where $`\hat u`$ is the predicted value of the PDE, $`u`$ is the actual value of the PDE, $`\theta`$ are the learned weights and biases of the network, $`\mathcal{L}_{\text{PDE}}`$ is the loss function for the PDE and $`\mathcal{L}_{\text{MSE}}`$ is the MSE loss function.
+where $`\hat u`$ is the learned primitive function, $`u`$ is the actual function, $`\theta`$ are the learned weights and biases of the network, $`\mathcal{L}_{\text{PDE}}`$ is the loss function for the PDE and $`\mathcal{L}_{\text{MSE}}`$ is the MSE loss function.
 Note, the loss function differs from the paper, where only the initial condition, boundary condition and the PDE itself are used in the loss function. However, as in our experiments we sample over the whole domain, the boundary and initial conditions are represented to some degree.
 
 ### Optimization
@@ -139,15 +141,3 @@ sweep:
 ```
 
 Note, currently conditional sweeps are not supported, meaning that we have to either carefully choose the parameters or run multiple sweeps over the dependent parameters. Another approach from this [issue](https://github.com/wandb/wandb/issues/1487).
-
-## Research Questions
-
-### Main Research Questions
-
-- [ ] Sample size of training points
-- [ ] Noise in training data
-
-### Further Research Questions
-
-- [ ] Different sampling methods and sizes for training points
-- [ ] Model architecture (e.g. number of layers, number of neurons per layer, activation functions, etc.)
