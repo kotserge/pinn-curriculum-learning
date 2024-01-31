@@ -18,10 +18,12 @@ The PDE in the initial experiments is the [Convection–Diffusion Equation](http
 
 The loss function is the mean squared error (MSE) between the predicted and the actual value and the PDE . The loss function is given by
 
-```math 
-    \text{MSE}}(\hat u, u \mid \theta) \\
-    \mathcal{L}_{\text{PDE}}(\hat u \mid \theta) &= \frac{\partial \hat u}{\partial t} + c \frac{\partial \hat u}{\partial x}\\
+```math
+\begin{aligned}
+    \mathcal{L}(\hat u, u \mid \theta) &= \mathcal{L}_{\text{PDE}}(\hat u \mid \theta) + \mathcal{L}_{\text{MSE}}(\hat u, u \mid \theta) \\
+    \mathcal{L}_{\text{PDE}}(\hat u \mid \theta) &= \frac{\partial \hat u}{\partial t} + c \frac{\partial \hat u}{\partial x} \\
     \mathcal{L}_{\text{MSE}}(\hat u, u \mid \theta) &= \frac{1}{n}\sum^n_{i=1}(\hat{u}(x_i, t_i) - u(x_i, t_i))^2
+\end{aligned}
 ```
 
 where $`\hat u`$ is the learned primitive function, $`u`$ is the actual function, $`\theta`$ are the learned weights and biases of the network, $`\mathcal{L}_{\text{PDE}}`$ is the loss function for the PDE and $`\mathcal{L}_{\text{MSE}}`$ is the MSE loss function.
