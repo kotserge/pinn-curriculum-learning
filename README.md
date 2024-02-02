@@ -4,47 +4,46 @@ PINNs are a class of neural networks that can be used to solve partial different
 
 This project aims to reproduce the results of the paper as well as investigate the effects of sampling size and noise in the training data on the performance of PINNs. 
 
-## Setup
+## Background
 
-### Model
-
-The model is implemented in PyTorch. The model is a fully connected neural network with 3 hidden layers and 50 neurons per layer. The activation function is the hyperbolic tangent function. The input of the network is the spatial coordinate $`x`$ and temporal coordinate $`t`$. The output of the network is $` \hat u(x, t)`$.
-
-### PDE
-
-The PDE in the initial experiments is the [Convection–Diffusion Equation](https://en.wikipedia.org/wiki/Convection%E2%80%93diffusion_equation) (CDE) with no diffusion term and a scalar convection term with a continuous boundary as well as a sine wave as the initial condition.
-
-### Loss Function
-
-The loss function is the mean squared error (MSE) between the predicted and the actual value and the PDE . The loss function is given by
-
-```math 
-    \text{MSE}}(\hat u, u \mid \theta) \\
-    \mathcal{L}_{\text{PDE}}(\hat u \mid \theta) &= \frac{\partial \hat u}{\partial t} + c \frac{\partial \hat u}{\partial x}\\
-    \mathcal{L}_{\text{MSE}}(\hat u, u \mid \theta) &= \frac{1}{n}\sum^n_{i=1}(\hat{u}(x_i, t_i) - u(x_i, t_i))^2
-```
-
-where $`\hat u`$ is the learned primitive function, $`u`$ is the actual function, $`\theta`$ are the learned weights and biases of the network, $`\mathcal{L}_{\text{PDE}}`$ is the loss function for the PDE and $`\mathcal{L}_{\text{MSE}}`$ is the MSE loss function.
-Note, the loss function differs from the paper, where only the initial condition, boundary condition and the PDE itself are used in the loss function. However, as in our experiments we sample over the whole domain, the boundary and initial conditions are represented to some degree.
-
-### Optimization
-
-We use three different optimizers; Adam, SGD and LBFGS. The hyperparameters for the optimizers are found using sweeps on some idealized experiments, where we sample 100 points from the domain, the noise is set to 50, and each optimizer is given 250 epochs. The hyperparameters swept include learning rate and weight decay for Adam and SGD including the momentum parameter for SGD. For LBFGS we sweep the learning rate, max iterations and history size. The hyperparameters are swept using [Weights & Biases](https://wandb.ai/site) (WandB). The sweeps are defined in the `config` directory under `config/hyperparameter_search`.
-
-### Experiments
-
-As the initial research question is the effect of sample size and noise in the training data, we run experiments with different sample sizes and noise levels. The experiments are defined in the `config` directory under `config/sampling-noise`. For the sample size we sweep over 10, 50, 100, 500, 1000 and 5000 samples. The samples are randomly sampled from the domain consisting of 10000 equidistant points. For the noise we use SNR values in dB of 0 (no noise), 0.1, 0.5, 1, 2, 5, 10, 20, 30, 40, 50.
-For the sweep we use the optimal hyperparameters found in the hyperparameter search and use grid search to test all combinations of sample size and noise level (this is done multiple times to get a better estimate of the performance).
-
-### Results
-
-The results can be found [here](https://wandb.ai/singing-kangaroo/Curriculum%20Learning%20Convection%20Equation/workspace?workspace=user-serge-kotchourko). (Note, this is still a work in progress)
+For a detailed background on PINNs, curriculum learning and results, please refer to the [project paper](doc/paper.pdf) and the [project presentation](doc/presentation/presentation-final.pdf).
 
 ## Implementation
 
 ### Curriculum Learning Implementation
 
 ![curriculum_learning](doc/img/curriculum_loop.drawio.png)
+
+### Quick Start
+
+#### Requirements
+
+To run the project, you need to have Python 3.8 or higher installed. To install the required packages, you can use the following command:
+
+```bash
+pip install -r requirements.txt
+```
+
+#### Running an example experiment
+
+The configuration files are written in YAML and are located in the `config` folder. Under the sub-directory `config/examples` you can find some examples for the configuration files.
+The overview section of the configuration file contains configurations for wandb and should be changed to your own wandb project (at least the entity field).
+
+To run an offline example configurations, you can use the following command:
+
+```bash
+python src/main.py config/example/offline-mini-test.yml
+```
+
+#### Running an experiment
+
+Under the `config` folder, you can find all the configuration files for the experiments used in the paper. To run an experiment, you can use the following command:
+
+```bash
+python src/main.py path/to/config.yml
+```
+
+Note, that running an experiment will create a new run on wandb, hence the entity field should be changed to your own wandb account or group. If you want to only run the experiment locally, you can set the `run_mode` from `online` to `disabled` in the configuration file. This will disable the wandb logging . Under any run mode, the artifacts will be saved in the `data/runs` folder. This will allow you to see a comparison plot of the different and save intermediate models for each curriculum step. We highly recommend to use wandb, as most data is logged there with additional information.
 
 ### Project Structure
 

@@ -13,5 +13,10 @@ wandb/
 data/
 !src/data/
 
+# Ignore other directories
+.venv/
+.vscode/
+.idea/
+
 # Ignore presentation folder
 # presentation/

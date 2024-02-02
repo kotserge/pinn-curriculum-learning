@@ -11,3 +11,5 @@ torch
 torchvision
 torchaudio
 plotly==5.18.0
+PyYAML
+wandb
